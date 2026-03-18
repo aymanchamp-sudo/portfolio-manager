@@ -94,6 +94,27 @@ public class PortfolioService {
 
     // ── Summary ───────────────────────────────────────────────
 
+    public String buildSummaryJson(java.util.List<Investment> list) {
+        double totalInvested    = list.stream().mapToDouble(Investment::getAmount).sum();
+        double totalPL          = list.stream().mapToDouble(Investment::getProfitLoss).sum();
+        double totalProfit      = list.stream().filter(Investment::isProfit).mapToDouble(Investment::getProfitLoss).sum();
+        double totalLoss        = list.stream().filter(i -> !i.isProfit()).mapToDouble(Investment::getProfitLoss).sum();
+        double totalCurrentVal  = list.stream().mapToDouble(Investment::getCurrentValue).sum();
+        double returnPct        = totalInvested == 0 ? 0 : (totalPL / totalInvested) * 100.0;
+        Investment best  = list.stream().max((a,b) -> Double.compare(a.getReturnPercent(), b.getReturnPercent())).orElse(null);
+        Investment worst = list.stream().min((a,b) -> Double.compare(a.getReturnPercent(), b.getReturnPercent())).orElse(null);
+        return String.format(
+            "{\"totalInvested\":%.2f,\"totalCurrentValue\":%.2f," +
+            "\"totalProfitLoss\":%.2f,\"totalProfit\":%.2f,\"totalLoss\":%.2f," +
+            "\"overallReturnPercent\":%.2f,\"count\":%d," +
+            "\"bestPerformer\":%s,\"worstPerformer\":%s}",
+            totalInvested, totalCurrentVal, totalPL, totalProfit, totalLoss,
+            returnPct, list.size(),
+            best  != null ? best.toJson()  : "null",
+            worst != null ? worst.toJson() : "null"
+        );
+    }
+
     public String getSummaryJson() {
         return portfolio.summaryToJson();
     }

@@ -1,5 +1,6 @@
 package com.portfolio;
 
+import com.portfolio.util.Database;
 import com.portfolio.controller.Router;
 import com.sun.net.httpserver.HttpServer;
 
@@ -36,6 +37,7 @@ public class PortfolioServer {
         }
 
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
+        Database.initSchema();
         Router router = new Router();
 
         // All API requests
