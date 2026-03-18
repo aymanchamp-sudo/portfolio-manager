@@ -126,11 +126,8 @@ public class Router {
 
         // IMPORT
         if (path.equals("/api/import/csv") && "POST".equals(method)) {
-            Map<String,String> body = JsonParser.parseObject(readBody(ex));
-            String filePath = body.getOrDefault("filePath", "").trim();
-            if (filePath.isEmpty())
-                throw new IllegalArgumentException("filePath is required in request body");
-            int count = svc.importCsv(filePath);
+            String body = readBody(ex);
+            int count = svc.importCsvContent(body);
             return JsonParser.okMsg("Imported " + count + " investment" + (count != 1 ? "s" : ""));
         }
 

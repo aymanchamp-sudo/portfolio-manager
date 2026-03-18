@@ -83,9 +83,19 @@ public class FileHandler {
      * Expected columns: name,type,sector,amount,buyPrice,sellPrice,quantity,purchaseDate,notes
      * (id column optional — will be reassigned)
      */
+    public static List<Investment> importFromCsvContent(String csvContent) throws IOException {
+        List<Investment> list = new ArrayList<>();
+        List<String> lines = java.util.Arrays.asList(csvContent.split("\\r?\\n"));
+        return parseCsvLines(list, lines);
+    }
+
     public static List<Investment> importFromCsv(String filePath) throws IOException {
         List<Investment> list = new ArrayList<>();
         List<String> lines = Files.readAllLines(Paths.get(filePath), StandardCharsets.UTF_8);
+        return parseCsvLines(list, lines);
+    }
+
+    private static List<Investment> parseCsvLines(List<Investment> list, List<String> lines) {
         if (lines.isEmpty()) return list;
 
         // Skip header

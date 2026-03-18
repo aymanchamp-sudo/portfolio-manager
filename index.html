@@ -1111,12 +1111,12 @@
             </div>
             <div style="background:var(--surface2);border-radius:10px;padding:18px">
               <div style="font-size:.8rem;font-family:'Inter',sans-serif;font-weight:600;margin-bottom:4px">Import Portfolio</div>
-              <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px">Import investment data from an external file</div>
-              <div style="border:2px dashed var(--border);border-radius:8px;padding:18px;text-align:center;cursor:pointer;transition:border-color .2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+              <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px">Import investment data from a CSV file</div>
+              <div id="import-drop-zone" style="border:2px dashed var(--border);border-radius:8px;padding:18px;text-align:center;cursor:pointer;transition:border-color .2s" onclick="document.getElementById('csv-file-input').click()" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
                 <i class="bi bi-cloud-upload" style="font-size:1.4rem;color:var(--muted)"></i>
-                <div style="font-size:.75rem;color:var(--muted);margin-top:6px">Enter file path below:<br><span style="font-size:.65rem">.csv files supported</span></div>
+                <div id="import-file-label" style="font-size:.75rem;color:var(--muted);margin-top:6px">Click to choose a CSV file<br><span style="font-size:.65rem">.csv files supported</span></div>
               </div>
-              <input class="form-control-custom mt-2" id="import-path" type="text" placeholder="e.g. data/portfolio_export.csv"/>
+              <input type="file" id="csv-file-input" accept=".csv" style="display:none" onchange="handleCsvFileSelect(this)"/>
               <button class="btn-ghost w-100 mt-2" onclick="importCsv()"><i class="bi bi-upload me-1"></i>Import File</button>
             </div>
           </div>
@@ -1380,12 +1380,15 @@
     ? 'http://localhost:' + API_PORT + '/api'
     : window.location.protocol + '//' + window.location.hostname + '/api';
 
-  async function apiFetch(method, endpoint, body = null) {
-    const opts = {
-      method,
-      headers: { 'Content-Type': 'application/json' }
-    };
-    if (body) opts.body = JSON.stringify(body);
+  async function apiFetch(method, endpoint, body = null, rawBody = null) {
+    const opts = { method, headers: {} };
+    if (rawBody !== null) {
+      opts.headers['Content-Type'] = 'text/plain';
+      opts.body = rawBody;
+    } else {
+      opts.headers['Content-Type'] = 'application/json';
+      if (body) opts.body = JSON.stringify(body);
+    }
     try {
       const res = await fetch(API + endpoint, opts);
       // Handle non-2xx HTTP responses
@@ -2011,13 +2014,30 @@
     if (res) showToast('✓ Exported to ' + res.path);
   }
 
+  let selectedCsvContent = null;
+
+  function handleCsvFileSelect(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      selectedCsvContent = e.target.result;
+      document.getElementById('import-file-label').innerHTML =
+        '<i class="bi bi-check-circle" style="color:var(--accent2)"></i> ' + file.name;
+      document.getElementById('import-drop-zone').style.borderColor = 'var(--accent2)';
+    };
+    reader.readAsText(file);
+  }
+
   async function importCsv() {
-    const pathEl = document.getElementById('import-path');
-    const path   = pathEl?.value.trim();
-    if (!path) { showToast('⚠ Please enter the CSV file path', true); return; }
-    const res = await api.post('/import/csv', { filePath: path });
+    if (!selectedCsvContent) { showToast('⚠ Please select a CSV file first', true); return; }
+    const res = await apiFetch('POST', '/import/csv', null, selectedCsvContent);
     if (res) {
       showToast('✓ ' + res.message);
+      selectedCsvContent = null;
+      document.getElementById('csv-file-input').value = '';
+      document.getElementById('import-file-label').innerHTML = 'Click to choose a CSV file<br><span style="font-size:.65rem">.csv files supported</span>';
+      document.getElementById('import-drop-zone').style.borderColor = 'var(--border)';
       loadPortfolio();
       loadDashboard();
     }

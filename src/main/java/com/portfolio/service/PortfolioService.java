@@ -154,6 +154,14 @@ public class PortfolioService {
         return imported.size();
     }
 
+    public int importCsvContent(String csvContent) throws IOException {
+        List<Investment> imported = FileHandler.importFromCsvContent(csvContent);
+        for (Investment inv : imported) portfolio.add(inv);
+        log(ActionType.IMPORT, "Imported " + imported.size() + " investments from uploaded CSV");
+        if (autoSave) silentSave();
+        return imported.size();
+    }
+
     // ── Activity Log ──────────────────────────────────────────
 
     public List<ActivityLog> getActivityLogs() {
