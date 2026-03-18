@@ -37,7 +37,12 @@ public class PortfolioServer {
         }
 
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
-        Database.initSchema();
+        try {
+            Database.init();
+            Database.initSchema();
+        } catch (Exception e) {
+            System.err.println("[Server] Database init failed: " + e.getMessage());
+        }
         Router router = new Router();
 
         // All API requests
