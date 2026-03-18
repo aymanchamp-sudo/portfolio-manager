@@ -1,8 +1,5 @@
 package com.portfolio.util;
 
-import java.net.URI;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.Properties;
 
@@ -17,6 +14,8 @@ public class Database {
                 throw new SQLException("DATABASE_URL environment variable not set");
             try {
                 connection = buildConnection(rawUrl);
+            } catch (SQLException e) {
+                throw e;
             } catch (Exception e) {
                 throw new SQLException("DB connection failed: " + e.getMessage(), e);
             }
@@ -24,39 +23,51 @@ public class Database {
         return connection;
     }
 
-    private static Connection buildConnection(String rawUrl) throws Exception {
-        // Normalise scheme for URI parsing
-        String uriStr = rawUrl
-            .replaceFirst("^postgresql://", "postgres://")
-            .replaceFirst("^jdbc:postgresql://", "postgres://");
-
-        URI uri = new URI(uriStr);
-
-        String host = uri.getHost();
-        int    port = uri.getPort() > 0 ? uri.getPort() : 5432;
-        String path = uri.getPath();
-        String db   = (path != null && path.startsWith("/")) ? path.substring(1) : "postgres";
-
-        // Extract user:password — handles dots in username
-        String userInfo = uri.getUserInfo();
-        String user = "", password = "";
-        if (userInfo != null) {
-            int colon = userInfo.indexOf(':');
-            if (colon >= 0) {
-                user     = URLDecoder.decode(userInfo.substring(0, colon), StandardCharsets.UTF_8);
-                password = URLDecoder.decode(userInfo.substring(colon + 1), StandardCharsets.UTF_8);
-            } else {
-                user = userInfo;
-            }
+    /**
+     * Manually parses postgresql://user:password@host:port/db
+     * Avoids java.net.URI which rejects special characters like [ ] @ in passwords.
+     */
+    private static Connection buildConnection(String rawUrl) throws SQLException {
+        // Strip scheme
+        String url = rawUrl;
+        for (String scheme : new String[]{"jdbc:postgresql://", "postgresql://", "postgres://"}) {
+            if (url.startsWith(scheme)) { url = url.substring(scheme.length()); break; }
         }
 
-        String jdbcUrl = "jdbc:postgresql://" + host + ":" + port + "/" + db + "?sslmode=require";
+        // Split user:password@rest  — find LAST @ to handle @ in passwords
+        int atIndex = url.lastIndexOf('@');
+        if (atIndex < 0) throw new SQLException("Invalid DATABASE_URL: missing @");
+
+        String userInfo = url.substring(0, atIndex);
+        String hostPart = url.substring(atIndex + 1);
+
+        // Split user:password — find FIRST colon
+        int colonIdx = userInfo.indexOf(':');
+        String user     = colonIdx >= 0 ? userInfo.substring(0, colonIdx) : userInfo;
+        String password = colonIdx >= 0 ? userInfo.substring(colonIdx + 1) : "";
+
+        // Split host:port/db
+        String host = hostPart;
+        String db   = "postgres";
+        int slashIdx = hostPart.indexOf('/');
+        if (slashIdx >= 0) {
+            host = hostPart.substring(0, slashIdx);
+            db   = hostPart.substring(slashIdx + 1);
+            // strip any query string from db name
+            int qIdx = db.indexOf('?');
+            if (qIdx >= 0) db = db.substring(0, qIdx);
+        }
+        int portColon = host.lastIndexOf(':');
+        String hostname = portColon >= 0 ? host.substring(0, portColon) : host;
+        int    port     = portColon >= 0 ? Integer.parseInt(host.substring(portColon + 1)) : 5432;
+
+        String jdbcUrl = "jdbc:postgresql://" + hostname + ":" + port + "/" + db + "?sslmode=require";
 
         Properties props = new Properties();
         props.setProperty("user",     user);
         props.setProperty("password", password);
-        props.setProperty("ssl",      "true");
 
+        System.out.println("[DB] Connecting to: " + hostname + ":" + port + "/" + db + " as " + user);
         return DriverManager.getConnection(jdbcUrl, props);
     }
 
