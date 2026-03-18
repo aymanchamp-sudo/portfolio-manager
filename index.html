@@ -1,0 +1,2136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PortfolioX — Investment Manager</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface2: #f1f5f9;
+      --border: #e2e8f0;
+      --accent: #4f46e5;
+      --accent2: #22c55e;
+      --accent3: #f59e0b;
+      --danger: #ef4444;
+      --text: #0f172a;
+      --muted: #64748b;
+      --card-bg: #ffffff;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    h1, h2, h3, h4, h5, .display-font { font-family: 'Inter', sans-serif; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 220px;
+      min-height: 100vh;
+      background: #ffffff;
+      border-right: 1px solid #e2e8f0;
+      position: fixed;
+      top: 0; left: 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      transition: width .3s;
+      box-shadow: 2px 0 12px rgba(0,0,0,0.04);
+    }
+    .sidebar-logo {
+      padding: 28px 20px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo-mark {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 1.5rem;
+      color: var(--accent);
+      letter-spacing: -1px;
+    }
+    .logo-sub {
+      font-size: .65rem;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .nav-menu { flex: 1; padding: 16px 0; }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 20px;
+      color: var(--muted);
+      font-size: .8rem;
+      cursor: pointer;
+      transition: all .2s;
+      border-left: 3px solid transparent;
+      text-decoration: none;
+      letter-spacing: .5px;
+    }
+    .nav-item:hover, .nav-item.active {
+      color: var(--text);
+      border-left-color: var(--accent);
+      background: rgba(79,70,229,.06);
+    }
+    .nav-item.active { color: var(--accent); font-weight: 600; }
+    .nav-item i { font-size: 1rem; width: 20px; text-align: center; }
+    .nav-section-label {
+      font-size: .6rem;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      padding: 14px 20px 6px;
+    }
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      font-size: .72rem;
+      color: var(--muted);
+    }
+
+    /* ── MAIN CONTENT ── */
+    .main-content {
+      margin-left: 220px;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .page-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .topbar-actions { display: flex; gap: 10px; align-items: center; }
+    .btn-accent {
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: .78rem;
+      font-weight: 500;
+      padding: 8px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: opacity .2s;
+      letter-spacing: .5px;
+    }
+    .btn-accent:hover { opacity: .85; }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'Inter', sans-serif;
+      font-size: .78rem;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── PAGE WRAPPER ── */
+    .page { display: none; }
+    .page.active { display: block; }
+    .page-body { padding: 30px 32px; }
+
+    /* ── CARDS ── */
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px 24px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .2s, box-shadow .2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .stat-card:hover {
+      box-shadow: 0 4px 16px rgba(79,70,229,0.10);
+    }
+    .stat-label { font-size: .68rem; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
+    .stat-value {
+      font-family: 'Inter', sans-serif;
+      font-size: 2rem;
+      font-weight: 600;
+      margin: 6px 0 4px;
+      line-height: 1;
+    }
+    .stat-badge {
+      font-size: .7rem;
+      padding: 3px 8px;
+      border-radius: 100px;
+    }
+    .badge-green { background: rgba(34,197,94,.12); color: #16a34a; }
+    .badge-red { background: rgba(255,77,109,.15); color: var(--danger); }
+    .badge-yellow { background: rgba(241,193,53,.15); color: var(--accent3); }
+    .stat-accent-line {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+    }
+
+    /* ── CHART PLACEHOLDER ── */
+    .chart-area {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      min-height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+    }
+    .mini-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 120px;
+    }
+    .bar {
+      width: 28px;
+      border-radius: 4px 4px 0 0;
+      opacity: .85;
+    }
+
+    /* ── TABLE ── */
+    .data-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .data-table thead th {
+      background: #f8fafc;
+      padding: 12px 16px;
+      font-size: .68rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+    }
+    .data-table tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .15s;
+    }
+    .data-table tbody tr:hover { background: rgba(255,255,255,.02); }
+    .data-table tbody td {
+      padding: 14px 16px;
+      font-size: .82rem;
+      color: var(--text);
+      vertical-align: middle;
+    }
+    .table-wrap {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+    }
+    .profit { color: var(--accent2); }
+    .loss { color: var(--danger); }
+    .asset-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+    }
+
+    /* ── FORM ── */
+    .form-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+    }
+    .form-section-title {
+      font-family: 'Inter', sans-serif;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .form-label-custom {
+      font-size: .7rem;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+      display: block;
+    }
+    .form-control-custom {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: .82rem;
+      padding: 10px 14px;
+      width: 100%;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+    .form-control-custom:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,70,229,0.08); }
+    .form-control-custom::placeholder { color: var(--muted); }
+    select.form-control-custom option { background: var(--surface2); }
+
+    /* ── BADGE PILL ── */
+    .pill {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: .7rem;
+      font-weight: 500;
+    }
+    .pill-green { background: rgba(79,70,229,.08); color: var(--accent); border: 1px solid rgba(79,70,229,.2); }
+    .pill-teal  { background: rgba(59,232,176,.1); color: var(--accent2); border: 1px solid rgba(59,232,176,.2); }
+    .pill-red   { background: rgba(255,77,109,.1); color: var(--danger); border: 1px solid rgba(255,77,109,.2); }
+    .pill-gray  { background: rgba(107,114,128,.1); color: var(--muted); border: 1px solid var(--border); }
+
+    /* ── ACTION BTNS ── */
+    .action-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 5px 8px;
+      border-radius: 6px;
+      font-size: .9rem;
+      transition: background .15s;
+    }
+    .action-btn.edit { color: var(--accent3); }
+    .action-btn.edit:hover { background: rgba(241,193,53,.1); }
+    .action-btn.delete { color: var(--danger); }
+    .action-btn.delete:hover { background: rgba(255,77,109,.1); }
+    .action-btn.view { color: var(--accent2); }
+    .action-btn.view:hover { background: rgba(59,232,176,.1); }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.65);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-box {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      width: 480px;
+      max-width: 95vw;
+      animation: slideUp .25s ease;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-title { font-family: 'Inter', sans-serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 6px; }
+    .modal-sub { font-size: .78rem; color: var(--muted); margin-bottom: 20px; }
+
+    /* ── PROGRESS ── */
+    .progress-bar-custom {
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 100px;
+      transition: width .6s ease;
+    }
+
+    /* ── NOTIFICATION ── */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: #ffffff;
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      padding: 14px 20px;
+      font-size: .8rem;
+      color: var(--text);
+      z-index: 9999;
+      display: none;
+      animation: fadeIn .3s ease;
+      box-shadow: 0 8px 32px rgba(0,0,0,.12);
+    }
+    .toast.show { display: flex; align-items: center; gap: 10px; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── SEARCH BAR ── */
+    .search-bar {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      padding: 8px 14px;
+      gap: 10px;
+      flex: 1;
+      max-width: 320px;
+    }
+    .search-bar input {
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: .8rem;
+      width: 100%;
+    }
+    .search-bar input::placeholder { color: var(--muted); }
+    .search-bar i { color: var(--muted); font-size: .9rem; }
+
+    /* ── DONUT CHART ── */
+    .donut-wrap { position: relative; display: inline-block; }
+    .donut-center {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    /* ── SETTINGS ROW ── */
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .setting-row:last-child { border-bottom: none; }
+    .toggle {
+      width: 40px; height: 22px;
+      background: var(--surface2);
+      border-radius: 100px;
+      cursor: pointer;
+      position: relative;
+      border: 1px solid var(--border);
+      transition: background .2s;
+    }
+    .toggle.on { background: var(--accent); }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      background: var(--bg);
+      border-radius: 50%;
+      top: 2px; left: 2px;
+      transition: left .2s;
+    }
+    .toggle.on::after { left: calc(100% - 18px); }
+
+    /* ── HELP ACCORDION ── */
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .faq-q {
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      font-size: .82rem;
+      background: #ffffff;
+    }
+    .faq-q:hover { background: #f8fafc; }
+    .faq-a {
+      display: none;
+      padding: 14px 18px;
+      font-size: .78rem;
+      color: var(--muted);
+      line-height: 1.7;
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+    }
+    .faq-a.show { display: block; }
+
+    /* ── ACTIVITY FEED ── */
+    .activity-item {
+      display: flex;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-icon {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .85rem;
+      flex-shrink: 0;
+    }
+    .activity-text { font-size: .78rem; line-height: 1.5; }
+    .activity-time { font-size: .68rem; color: var(--muted); margin-top: 2px; }
+
+    /* ── BREADCRUMB ── */
+    .breadcrumb-custom {
+      font-size: .72rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .breadcrumb-custom span { color: var(--text); }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .sidebar { width: 60px; }
+      .logo-mark, .logo-sub, .nav-item span, .nav-section-label, .sidebar-footer { display: none; }
+      .main-content { margin-left: 60px; }
+      .page-body { padding: 16px; }
+      .topbar { padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     SIDEBAR
+══════════════════════════════════════════ -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">PortfolioX</div>
+    <div class="logo-sub">Investment Manager</div>
+  </div>
+  <nav class="nav-menu">
+    <div class="nav-section-label">Overview</div>
+    <a class="nav-item active" onclick="showPage('dashboard')">
+      <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
+    </a>
+    <a class="nav-item" onclick="showPage('portfolio')">
+      <i class="bi bi-briefcase-fill"></i><span>Portfolio</span>
+    </a>
+    <a class="nav-item" onclick="showPage('summary')">
+      <i class="bi bi-bar-chart-fill"></i><span>Summary</span>
+    </a>
+    <div class="nav-section-label">Investments</div>
+    <a class="nav-item" onclick="showPage('add')">
+      <i class="bi bi-plus-circle-fill"></i><span>Add Investment</span>
+    </a>
+    <a class="nav-item" onclick="showPage('calculator')">
+      <i class="bi bi-calculator-fill"></i><span>P&L Calculator</span>
+    </a>
+    <div class="nav-section-label">Data</div>
+    <a class="nav-item" onclick="showPage('importexport')">
+      <i class="bi bi-arrow-left-right"></i><span>Import / Export</span>
+    </a>
+    <a class="nav-item" onclick="showPage('activity')">
+      <i class="bi bi-clock-history"></i><span>Activity Log</span>
+    </a>
+    <div class="nav-section-label">System</div>
+    <a class="nav-item" onclick="showPage('settings')">
+      <i class="bi bi-gear-fill"></i><span>Settings</span>
+    </a>
+    <a class="nav-item" onclick="showPage('help')">
+      <i class="bi bi-question-circle-fill"></i><span>Help</span>
+    </a>
+  </nav>
+  <div class="sidebar-footer">v1.0.0 · File-based</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MAIN CONTENT
+══════════════════════════════════════════ -->
+<div class="main-content">
+
+<!-- ━━━━━━━━━━━━━━━━━━ PAGE 1: DASHBOARD ━━━━━━━━━━━━━━━━━━ -->
+<div class="page active" id="page-dashboard">
+  <div class="topbar">
+    <div>
+      <div class="page-title">Dashboard</div>
+      <div class="breadcrumb-custom">Overview of your portfolio</div>
+    </div>
+    <div class="topbar-actions">
+      <span id="backend-indicator"></span>
+      <button class="btn-ghost" onclick="savePortfolio(true)"><i class="bi bi-floppy me-1"></i>Save Data</button>
+      <button class="btn-accent" onclick="showPage('add')"><i class="bi bi-plus me-1"></i>Add Investment</button>
+    </div>
+  </div>
+  <div class="page-body">
+    <!-- STAT CARDS -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="stat-card">
+          <div class="stat-label">Total Invested</div>
+          <div class="stat-value" id="dash-invested" style="color:var(--text)">—</div>
+          <span class="stat-badge badge-green" id="dash-count">— assets</span>
+          <div class="stat-accent-line" style="background:var(--accent)"></div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="stat-card">
+          <div class="stat-label">Current Value</div>
+          <div class="stat-value" id="dash-value" style="color:var(--accent2)">—</div>
+          <span class="stat-badge badge-green" id="dash-return-badge">—</span>
+          <div class="stat-accent-line" style="background:var(--accent2)"></div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="stat-card">
+          <div class="stat-label">Total Profit</div>
+          <div class="stat-value" id="dash-profit" style="color:var(--accent)">—</div>
+          <span class="stat-badge badge-green">Unrealised</span>
+          <div class="stat-accent-line" style="background:var(--accent)"></div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="stat-card">
+          <div class="stat-label">Total Loss</div>
+          <div class="stat-value" id="dash-loss" style="color:var(--danger)">—</div>
+          <span class="stat-badge badge-red">Loss-making assets</span>
+          <div class="stat-accent-line" style="background:var(--danger)"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <!-- BAR CHART — dynamic, driven by real investment data -->
+      <div class="col-12 col-lg-7">
+        <div class="chart-area" style="flex-direction:column;align-items:flex-start;">
+          <div style="font-family:'Inter',sans-serif;font-size:.85rem;font-weight:600;margin-bottom:16px;color:var(--text)">Portfolio Performance</div>
+
+          <!-- Empty state -->
+          <div id="barchart-empty" style="flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px 0">
+            <i class="bi bi-bar-chart" style="font-size:2.2rem;color:#e2e8f0"></i>
+            <div style="font-size:.78rem;color:var(--muted)">No performance data yet</div>
+            <div style="font-size:.72rem;color:var(--muted)">Add investments to see the chart</div>
+          </div>
+
+          <!-- Dynamic bars -->
+          <div id="barchart-bars" style="display:none;align-items:flex-end;gap:10px;height:130px;width:100%"></div>
+          <div id="barchart-label" style="display:none;font-size:.65rem;color:var(--muted);margin-top:8px;align-self:flex-end">Bar height = P&L %</div>
+        </div>
+      </div>
+      <!-- ALLOCATION DONUT — dynamic, driven by real investment data -->
+      <div class="col-12 col-lg-5">
+        <div class="chart-area" style="flex-direction:column;gap:16px;">
+          <div style="font-family:'Inter',sans-serif;font-size:.85rem;font-weight:600;color:var(--text);align-self:flex-start">Allocation</div>
+
+          <!-- Empty state: shown when no investments exist -->
+          <div id="donut-empty" style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 0">
+            <svg viewBox="0 0 120 120" width="110" height="110">
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#e2e8f0" stroke-width="14"/>
+              <text x="60" y="65" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="sans-serif">No data</text>
+            </svg>
+            <div style="font-size:.75rem;color:var(--muted)">Add investments to see allocation</div>
+          </div>
+
+          <!-- Dynamic donut: hidden until investments are loaded -->
+          <div id="donut-chart" style="display:none;flex-direction:column;align-items:center;gap:14px;width:100%">
+            <svg id="donut-svg" viewBox="0 0 120 120" width="110" height="110" style="flex-shrink:0"></svg>
+            <div id="donut-legend" style="display:flex;flex-direction:column;gap:5px;font-size:.72rem;width:100%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK VIEW TABLE -->
+    <div style="font-family:'Inter',sans-serif;font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:12px;">Recent Investments</div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Investment</th><th>Amount</th><th>Buy Price</th><th>Sell Price</th><th>Qty</th><th>P&L</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="dash-tbody">
+          <tr>
+            <td colspan="7" style="text-align:center; padding:30px; color:var(--muted)">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+                <i class="bi bi-bar-chart" style="font-size:1.8rem;color:var(--border)"></i>
+                <span style="font-size:.82rem">No investments yet</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━ PAGE 2: PORTFOLIO TABLE ━━━━━━━━━━━━━━━━━━ -->
+<div class="page" id="page-portfolio">
+  <div class="topbar">
+    <div>
+      <div class="page-title">Portfolio</div>
+      <div class="breadcrumb-custom">All Investment Records</div>
+    </div>
+    <div class="topbar-actions">
+      <div class="search-bar"><i class="bi bi-search"></i><input type="text" id="portfolio-search" placeholder="Search investment..."/></div>
+      <button class="btn-accent" onclick="showPage('add')"><i class="bi bi-plus me-1"></i>Add New</button>
+    </div>
+  </div>
+  <div class="page-body">
+    <div class="d-flex align-items-center gap-3 mb-3">
+      <div style="font-size:.75rem;color:var(--muted)">Filter:</div>
+      <span class="pill pill-green" style="cursor:pointer">All</span>
+      <span class="pill pill-teal" style="cursor:pointer">Profit</span>
+      <span class="pill pill-red" style="cursor:pointer">Loss</span>
+      <span class="pill pill-gray" style="cursor:pointer">Breakeven</span>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th><th>Name</th><th>Amount</th><th>Buy Price</th><th>Sell Price</th><th>Qty</th><th>P&L</th><th>P&L %</th><th>Status</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="portfolio-tbody">
+          <tr>
+            <td colspan="10" style="text-align:center; padding:40px; color:var(--muted)">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+                <i class="bi bi-briefcase" style="font-size:2rem;color:var(--border)"></i>
+                <span style="font-size:.85rem">No portfolio data available</span>
+                <span style="font-size:.75rem">Add your first investment to get started</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:.73rem;color:var(--muted)">
+      <span id="portfolio-count">Loading...</span>
+      <div style="display:flex;gap:6px">
+        <button class="btn-ghost" style="padding:5px 12px">← Prev</button>
+        <button class="btn-ghost" style="padding:5px 12px;border-color:var(--accent);color:var(--accent)">1</button>
+        <button class="btn-ghost" style="padding:5px 12px">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━ PAGE 3: ADD INVESTMENT ━━━━━━━━━━━━━━━━━━ -->
+<div class="page" id="page-add">
+  <div class="topbar">
+    <div>
+      <div class="page-title">Add Investment</div>
+      <div class="breadcrumb-custom">Portfolio → <span>New Investment</span></div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn-ghost" onclick="showPage('portfolio')">Cancel</button>
+    </div>
+  </div>
+  <div class="page-body">
+    <div class="row g-4">
+      <div class="col-12 col-lg-8">
+        <div class="form-card">
+          <div class="form-section-title">Investment Details</div>
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label class="form-label-custom">Investment Name *</label>
+              <input class="form-control-custom" type="text" placeholder="e.g. Reliance Industries" id="inv-name"/>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-custom">Investment Type</label>
+              <select class="form-control-custom" id="inv-type">
+                <option>Stock</option>
+                <option>Mutual Fund</option>
+                <option>Gold</option>
+                <option>Bonds</option>
+                <option>Crypto</option>
+                <option>Fixed Deposit</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-custom">Total Amount (₹) *</label>
+              <input class="form-control-custom" type="number" placeholder="e.g. 50000" id="inv-amount"/>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-custom">Quantity</label>
+              <input class="form-control-custom" type="number" placeholder="e.g. 20" id="inv-qty"/>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-custom">Buy Price (₹) *</label>
+              <input class="form-control-custom" type="number" placeholder="e.g. 2500" id="inv-buy"/>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-custom">Sell Price (₹)</label>
+              <input class="form-control-custom" type="number" placeholder="e.g. 2900" id="inv-sell"/>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-custom">Purchase Date</label>
+              <input class="form-control-custom" id="inv-date" type="date"/>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-custom">Sector</label>
+              <select class="form-control-custom" id="inv-sector">
+                <option>IT</option>
+                <option>Banking</option>
+                <option>Energy</option>
+                <option>Pharma</option>
+                <option>FMCG</option>
+                <option>Auto</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label-custom">Notes</label>
+              <textarea class="form-control-custom" id="inv-notes" rows="2" placeholder="Optional notes about this investment..."></textarea>
+            </div>
+          </div>
+          <div class="d-flex gap-3 mt-4">
+            <button class="btn-accent" onclick="handleAddInvestment()"><i class="bi bi-plus-circle me-1"></i>Add Investment</button>
+            <button class="btn-ghost" onclick="clearAddForm()"><i class="bi bi-arrow-counterclockwise me-1"></i>Reset</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-4">
+        <div class="form-card mb-3">
+          <div class="form-section-title">Live Preview</div>
+          <div style="font-size:.75rem;color:var(--muted);line-height:1.9">
+            <div style="display:flex;justify-content:space-between"><span>Name</span><span id="prev-name" style="color:var(--text)">—</span></div>
+            <div style="display:flex;justify-content:space-between"><span>Amount</span><span id="prev-amount" style="color:var(--text)">—</span></div>
+            <div style="display:flex;justify-content:space-between"><span>Buy Price</span><span id="prev-buy" style="color:var(--text)">—</span></div>
+            <div style="display:flex;justify-content:space-between"><span>Sell Price</span><span id="prev-sell" style="color:var(--text)">—</span></div>
+            <div style="display:flex;justify-content:space-between"><span>Quantity</span><span id="prev-qty" style="color:var(--text)">—</span></div>
+            <hr style="border-color:var(--border);margin:8px 0"/>
+            <div style="display:flex;justify-content:space-between"><span>Est. P&L</span><span id="prev-pl" style="color:var(--accent)">—</span></div>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-section-title">Formula</div>
+          <div style="background:var(--surface2);border-radius:8px;padding:14px;font-size:.75rem;color:var(--accent2);line-height:1.8">
+            P&L = (Sell − Buy) × Qty<br>
+            <span style="color:var(--muted)">e.g. (2900 − 2500) × 20</span><br>
+            <span style="color:var(--accent)">= ₹8,000 profit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━ PAGE 4: EDIT INVESTMENT ━━━━━━━━━━━━━━━━━━ -->
+<div class="page" id="page-edit">
+  <div class="topbar">
+    <div>
+      <div class="page-title">Edit Investment</div>
+      <div class="breadcrumb-custom">Portfolio → <span>Update Record</span></div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn-ghost" onclick="showPage('portfolio')">Cancel</button>
+    </div>
+  </div>
+  <div class="page-body">
+    <div class="row g-4">
+      <div class="col-12 col-lg-8">
+        <div class="form-card">
+          <div class="form-section-title">Update Investment</div>
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label class="form-label-custom">Investment Name *</label>
+              <input class="form-control-custom" id="edit-name" type="text" value=""/>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-custom">Investment Type</label>
+              <select class="form-control-custom" id="edit-type"><option>Stock</option><option>Mutual Fund</option><option>Gold</option><option>Bonds</option><option>Crypto</option><option>Fixed Deposit</option></select>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-custom">Total Amount (₹) *</label>
+              <input class="form-control-custom" id="edit-amount" type="number" value=""/>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-custom">Quantity</label>
+              <input class="form-control-custom" id="edit-qty" type="number" value=""/>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-custom">Buy Price (₹) *</label>
+              <input class="form-control-custom" id="edit-buy" type="number" value=""/>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-custom">Sell Price (₹)</label>
+              <input class="form-control-custom" id="edit-sell" type="number" value=""/>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-custom">Purchase Date</label>
+              <input class="form-control-custom" id="edit-date" type="date" value=""/>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-custom">Sector</label>
+              <select class="form-control-custom" id="edit-sector"><option>IT</option><option>Banking</option><option>Energy</option><option>Pharma</option><option>FMCG</option><option>Auto</option></select>
+            </div>
+          </div>
+          <div class="d-flex gap-3 mt-4">
+            <button class="btn-accent" onclick="handleUpdateInvestment()"><i class="bi bi-check-circle me-1"></i>Save Changes</button>
+            <button class="btn-ghost" style="color:var(--danger);border-color:var(--danger)" onclick="deleteFromEdit()"><i class="bi bi-trash me-1"></i>Delete</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-4">
+        <div class="form-card">
+          <div class="form-section-title">Current P&L</div>
+          <div style="text-align:center;padding:16px 0">
+            <div style="font-size:.7rem;color:var(--muted);margin-bottom:6px">Profit/Loss</div>
+            <div id="edit-pl-val" style="font-family:'Inter',sans-serif;font-size:2.2rem;font-weight:600;color:var(--accent)">—</div>
+            <div id="edit-pl-pct" style="font-size:.78rem;color:var(--accent2);margin-top:4px">—</div>
+            <div class="mt-3" style="font-size:.72rem;color:var(--muted);line-height:2">
+              <div style="display:flex;justify-content:space-between"><span id="edit-buy-disp">Buy: —</span><span id="edit-sell-disp">Sell: —</span></div>
+              <div style="display:flex;justify-content:space-between"><span id="edit-qty-disp">Qty: —</span><span id="edit-gain-disp">Gain/unit: —</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="form-card mt-3">
+          <div class="form-section-title">Audit Trail</div>
+          <div style="font-size:.72rem;color:var(--muted);line-height:2">
+            <div>Created: <span id="edit-created">—</span></div>
+            <div>Last updated: 10 Mar 2024</div>
+            <div>Record ID: <span id="edit-record-id">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━ PAGE 5: SUMMARY ━━━━━━━━━━━━━━━━━━ -->
+<div class="page" id="page-summary">
+  <div class="topbar">
+    <div>
+      <div class="page-title">Portfolio Summary</div>
+      <div class="breadcrumb-custom">Analytics & Overview</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn-ghost"><i class="bi bi-printer me-1"></i>Print</button>
+      <button class="btn-accent" onclick="showPage('importexport')"><i class="bi bi-download me-1"></i>Export Report</button>
+    </div>
+  </div>
+  <div class="page-body">
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-md-4">
+        <div class="form-card h-100">
+          <div class="form-section-title">Overall Stats</div>
+          <div style="font-size:.78rem;line-height:2.2;color:var(--muted)">
+            <div style="display:flex;justify-content:space-between"><span>Total Invested</span><span id="sum-invested" style="color:var(--text)">—</span></div>
+            <div style="display:flex;justify-content:space-between"><span>Current Value</span><span id="sum-value" style="color:var(--accent2)">—</span></div>
+            <div style="display:flex;justify-content:space-between"><span>Net Profit</span><span id="sum-profit" style="color:var(--accent)">—</span></div>
+            <div style="display:flex;justify-content:space-between"><span>Total Loss</span><span id="sum-loss" style="color:var(--danger)">—</span></div>
+            <hr style="border-color:var(--border);margin:6px 0"/>
+            <div style="display:flex;justify-content:space-between"><span>Net Gain</span><span id="sum-net" style="color:var(--accent);font-size:.9rem;font-family:'Inter',sans-serif;font-weight:600">—</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-8">
+        <div class="form-card h-100">
+          <div class="form-section-title">Investment-wise Breakdown</div>
+          <div id="sum-bars" style="display:flex;flex-direction:column;gap:12px;margin-top:4px"><div style="color:var(--muted);font-size:.78rem">Loading...</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="row g-3">
+      <div class="col-12 col-md-6">
+        <div class="form-card">
+          <div class="form-section-title">Top Performer</div>
+          <div style="display:flex;align-items:center;gap:14px;padding:8px 0">
+            <div style="width:48px;height:48px;background:rgba(200,241,53,.1);border:1px solid rgba(200,241,53,.2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-weight:600;color:var(--accent)">INF</div>
+            <div>
+              <div id="sum-best-name" style="font-family:'Inter',sans-serif;font-weight:600">—</div>
+              <div style="font-size:.75rem;color:var(--muted)">Best return this period</div>
+            </div>
+            <div style="margin-left:auto;text-align:right">
+              <div id="sum-best-pct" style="color:var(--accent);font-family:'Inter',sans-serif;font-weight:600">—</div>
+              <div id="sum-best-amount" style="font-size:.72rem;color:var(--muted)">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="form-card">
+          <div class="form-section-title">Worst Performer</div>
+          <div style="display:flex;align-items:center;gap:14px;padding:8px 0">
+            <div style="width:48px;height:48px;background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-weight:600;color:var(--danger)">HDF</div>
+            <div>
+              <div id="sum-worst-name" style="font-family:'Inter',sans-serif;font-weight:600">—</div>
+              <div style="font-size:.75rem;color:var(--muted)">Highest loss this period</div>
+            </div>
+            <div style="margin-left:auto;text-align:right">
+              <div id="sum-worst-pct" style="color:var(--danger);font-family:'Inter',sans-serif;font-weight:600">—</div>
+              <div id="sum-worst-amount" style="font-size:.72rem;color:var(--muted)">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━ PAGE 6: P&L CALCULATOR ━━━━━━━━━━━━━━━━━━ -->
+<div class="page" id="page-calculator">
+  <div class="topbar">
+    <div>
+      <div class="page-title">P&L Calculator</div>
+      <div class="breadcrumb-custom">Calculate Profit / Loss</div>
+    </div>
+  </div>
+  <div class="page-body">
+    <div class="row g-4">
+      <div class="col-12 col-lg-6">
+        <div class="form-card">
+          <div class="form-section-title">Input Parameters</div>
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label-custom">Buy Price (₹) *</label>
+              <input class="form-control-custom" type="number" placeholder="e.g. 2400" id="calc-buy" oninput="calcPL()"/>
+            </div>
+            <div class="col-12">
+              <label class="form-label-custom">Sell Price (₹) *</label>
+              <input class="form-control-custom" type="number" placeholder="e.g. 2800" id="calc-sell" oninput="calcPL()"/>
+            </div>
+            <div class="col-12">
+              <label class="form-label-custom">Quantity *</label>
+              <input class="form-control-custom" type="number" placeholder="e.g. 30" id="calc-qty" oninput="calcPL()"/>
+            </div>
+            <div class="col-12">
+              <label class="form-label-custom">Brokerage / Fees (₹)</label>
+              <input class="form-control-custom" type="number" placeholder="e.g. 200" id="calc-fee" oninput="calcPL()"/>
+            </div>
+          </div>
+          <button class="btn-accent mt-4 w-100" onclick="calcPL()"><i class="bi bi-calculator me-1"></i>Calculate</button>
+        </div>
+      </div>
+      <div class="col-12 col-lg-6">
+        <div class="form-card mb-3">
+          <div class="form-section-title">Result</div>
+          <div style="text-align:center;padding:20px 0">
+            <div style="font-size:.72rem;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">Net Profit / Loss</div>
+            <div id="calc-result" style="font-family:'Inter',sans-serif;font-size:3rem;font-weight:600;color:var(--accent)">—</div>
+            <div id="calc-pct" style="font-size:.9rem;color:var(--muted);margin-top:4px">—</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:8px;padding:14px;font-size:.75rem;line-height:2;color:var(--muted)">
+            <div style="display:flex;justify-content:space-between"><span>Gross P&L</span><span id="res-gross" style="color:var(--text)">—</span></div>
+            <div style="display:flex;justify-content:space-between"><span>Fees Deducted</span><span id="res-fee" style="color:var(--danger)">—</span></div>
+            <div style="display:flex;justify-content:space-between"><span>Net P&L</span><span id="res-net" style="color:var(--accent)">—</span></div>
+            <div style="display:flex;justify-content:space-between"><span>Return %</span><span id="res-pct" style="color:var(--accent2)">—</span></div>
+          </div>
+        </div>
+        <div class="form-card" style="background:rgba(200,241,53,.03);border-color:rgba(200,241,53,.15)">
+          <div style="font-size:.72rem;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Formula</div>
+          <div style="font-family:'Inter',sans-serif;font-size:.8rem;color:var(--text);line-height:2">
+            P&L = (Sell − Buy) × Qty − Fees<br>
+            Return % = (P&L / Investment) × 100
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━ PAGE 7: IMPORT / EXPORT ━━━━━━━━━━━━━━━━━━ -->
+<div class="page" id="page-importexport">
+  <div class="topbar">
+    <div>
+      <div class="page-title">Import / Export</div>
+      <div class="breadcrumb-custom">Data Management & File Operations</div>
+    </div>
+  </div>
+  <div class="page-body">
+    <div class="row g-4">
+      <!-- SAVE / LOAD -->
+      <div class="col-12 col-md-6">
+        <div class="form-card h-100">
+          <div class="form-section-title">Save & Load Data</div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="background:var(--surface2);border-radius:10px;padding:18px">
+              <div style="font-size:.8rem;font-family:'Inter',sans-serif;font-weight:600;margin-bottom:4px">Save Portfolio</div>
+              <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px">Save all current data to the local file system (portfolio.dat)</div>
+              <button class="btn-accent w-100" onclick="savePortfolio(true)"><i class="bi bi-floppy me-1"></i>Save Now</button>
+            </div>
+            <div style="background:var(--surface2);border-radius:10px;padding:18px">
+              <div style="font-size:.8rem;font-family:'Inter',sans-serif;font-weight:600;margin-bottom:4px">Load Portfolio</div>
+              <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px">Load previously saved data from file</div>
+              <button class="btn-ghost w-100" onclick="loadPortfolioFromFile()"><i class="bi bi-folder2-open me-1"></i>Load Data</button>
+            </div>
+          </div>
+          <div style="background:var(--surface2);border-radius:8px;padding:12px;margin-top:14px;font-size:.7rem;color:var(--muted)">
+            <i class="bi bi-info-circle me-1"></i>
+            File: <span id="file-path">—</span> &nbsp;|&nbsp;
+            Exists: <span id="file-exists">—</span> &nbsp;|&nbsp;
+            Size: <span id="file-size">—</span> &nbsp;|&nbsp;
+            Records: <span id="file-count">—</span>
+            &nbsp;<span id="file-status-badge"></span>
+          </div>
+        </div>
+      </div>
+      <!-- IMPORT / EXPORT -->
+      <div class="col-12 col-md-6">
+        <div class="form-card h-100">
+          <div class="form-section-title">Import / Export External</div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="background:var(--surface2);border-radius:10px;padding:18px">
+              <div style="font-size:.8rem;font-family:'Inter',sans-serif;font-weight:600;margin-bottom:4px">Export Portfolio</div>
+              <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px">Export your portfolio to a shareable file format</div>
+              <div style="display:flex;gap:8px">
+                <select id="export-format" class="form-control-custom" style="flex:1">
+                  <option value="csv">CSV Format</option>
+                  <option value="txt">TXT Format</option>
+                  <option value="json">JSON Format</option>
+                </select>
+                <button class="btn-accent" onclick="exportData(document.getElementById('export-format').value)"><i class="bi bi-download"></i></button>
+              </div>
+            </div>
+            <div style="background:var(--surface2);border-radius:10px;padding:18px">
+              <div style="font-size:.8rem;font-family:'Inter',sans-serif;font-weight:600;margin-bottom:4px">Import Portfolio</div>
+              <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px">Import investment data from an external file</div>
+              <div style="border:2px dashed var(--border);border-radius:8px;padding:18px;text-align:center;cursor:pointer;transition:border-color .2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                <i class="bi bi-cloud-upload" style="font-size:1.4rem;color:var(--muted)"></i>
+                <div style="font-size:.75rem;color:var(--muted);margin-top:6px">Enter file path below:<br><span style="font-size:.65rem">.csv files supported</span></div>
+              </div>
+              <input class="form-control-custom mt-2" id="import-path" type="text" placeholder="e.g. data/portfolio_export.csv"/>
+              <button class="btn-ghost w-100 mt-2" onclick="importCsv()"><i class="bi bi-upload me-1"></i>Import File</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━ PAGE 8: ACTIVITY LOG ━━━━━━━━━━━━━━━━━━ -->
+<div class="page" id="page-activity">
+  <div class="topbar">
+    <div>
+      <div class="page-title">Activity Log</div>
+      <div class="breadcrumb-custom">System History & Audit Trail</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn-ghost" onclick="clearActivityLog()"><i class="bi bi-trash me-1"></i>Clear Log</button>
+    </div>
+  </div>
+  <div class="page-body">
+    <div class="form-card" id="activity-log"><div style="color:var(--muted);font-size:.8rem;padding:16px">Loading...</div></div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━ PAGE 9: SETTINGS ━━━━━━━━━━━━━━━━━━ -->
+<div class="page" id="page-settings">
+  <div class="topbar">
+    <div>
+      <div class="page-title">Settings</div>
+      <div class="breadcrumb-custom">Application Preferences</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn-accent" onclick="showToast('✓ Settings saved')"><i class="bi bi-check me-1"></i>Save Settings</button>
+    </div>
+  </div>
+  <div class="page-body">
+    <div class="row g-4">
+      <div class="col-12 col-lg-7">
+        <div class="form-card mb-3">
+          <div class="form-section-title">General</div>
+          <div class="setting-row">
+            <div>
+              <div style="font-size:.82rem">Auto-save on exit</div>
+              <div style="font-size:.7rem;color:var(--muted)">Automatically save portfolio when closing</div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div style="font-size:.82rem">Confirm before delete</div>
+              <div style="font-size:.7rem;color:var(--muted)">Show confirmation dialog before deleting</div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div style="font-size:.82rem">Activity logging</div>
+              <div style="font-size:.7rem;color:var(--muted)">Track all changes in the activity log</div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+        <div class="form-card mb-3">
+          <div class="form-section-title">Display</div>
+          <div class="setting-row">
+            <div>
+              <div style="font-size:.82rem">Currency Symbol</div>
+              <div style="font-size:.7rem;color:var(--muted)">Display currency prefix</div>
+            </div>
+            <select class="form-control-custom" style="width:100px">
+              <option>₹ INR</option>
+              <option>$ USD</option>
+              <option>€ EUR</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div style="font-size:.82rem">Default Sort</div>
+              <div style="font-size:.7rem;color:var(--muted)">Sort portfolio table by</div>
+            </div>
+            <select class="form-control-custom" style="width:130px">
+              <option>Name (A-Z)</option>
+              <option>P&L (High to Low)</option>
+              <option>Amount (High to Low)</option>
+              <option>Date Added</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div style="font-size:.82rem">Show % alongside P&L</div>
+              <div style="font-size:.7rem;color:var(--muted)">Show percentage return in table</div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-section-title">Data</div>
+          <div class="setting-row">
+            <div>
+              <div style="font-size:.82rem">Default file path</div>
+            </div>
+            <input class="form-control-custom" style="width:200px;font-size:.72rem" value="./portfolio.dat"/>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div style="font-size:.82rem">Backup on save</div>
+              <div style="font-size:.7rem;color:var(--muted)">Create .bak copy each time you save</div>
+            </div>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="mt-3 d-flex gap-2">
+            <button class="btn-ghost" style="font-size:.75rem;color:var(--danger);border-color:var(--danger)" onclick="showToast('✓ All data cleared')">
+              <i class="bi bi-exclamation-triangle me-1"></i>Clear All Data
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-5">
+        <div class="form-card">
+          <div class="form-section-title">About</div>
+          <div style="font-size:.78rem;color:var(--muted);line-height:2">
+            <div style="display:flex;justify-content:space-between"><span>Application</span><span style="color:var(--text)">PortfolioX</span></div>
+            <div style="display:flex;justify-content:space-between"><span>Version</span><span style="color:var(--text)">1.0.0</span></div>
+            <div style="display:flex;justify-content:space-between"><span>Language</span><span style="color:var(--text)">Java</span></div>
+            <div style="display:flex;justify-content:space-between"><span>Storage</span><span style="color:var(--text)">File-based (.dat)</span></div>
+            <div style="display:flex;justify-content:space-between"><span>Architecture</span><span style="color:var(--text)">Single-user</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━ PAGE 10: HELP ━━━━━━━━━━━━━━━━━━ -->
+<div class="page" id="page-help">
+  <div class="topbar">
+    <div>
+      <div class="page-title">Help & Documentation</div>
+      <div class="breadcrumb-custom">FAQ & User Guide</div>
+    </div>
+  </div>
+  <div class="page-body">
+    <div class="row g-4">
+      <div class="col-12 col-lg-7">
+        <div style="font-family:'Inter',sans-serif;font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:14px">Frequently Asked Questions</div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span>How do I add a new investment?</span><i class="bi bi-chevron-down"></i>
+          </div>
+          <div class="faq-a">Navigate to <strong style="color:var(--accent)">Add Investment</strong> from the sidebar. Fill in the investment name, amount, buy price, sell price, and quantity. Click <strong style="color:var(--accent)">Add Investment</strong> to save it to your portfolio.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span>How is Profit/Loss calculated?</span><i class="bi bi-chevron-down"></i>
+          </div>
+          <div class="faq-a">P&L = (Sell Price − Buy Price) × Quantity. For example, if you bought 30 shares at ₹2,400 and sold at ₹2,800: P&L = (2800 − 2400) × 30 = ₹12,000 profit. Use the P&L Calculator page for instant results.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span>How do I save my portfolio?</span><i class="bi bi-chevron-down"></i>
+          </div>
+          <div class="faq-a">Go to <strong style="color:var(--accent)">Import / Export</strong> → click <strong>Save Now</strong>. Your data is stored in portfolio.dat in the application directory. You can also enable Auto-save in Settings.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span>Can I import data from Excel?</span><i class="bi bi-chevron-down"></i>
+          </div>
+          <div class="faq-a">You can import CSV files, which can be exported from Excel. Go to Import / Export → Import Portfolio, and select your .csv file. Ensure it follows the format: Name, Amount, BuyPrice, SellPrice, Quantity.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span>How do I delete an investment?</span><i class="bi bi-chevron-down"></i>
+          </div>
+          <div class="faq-a">In the Portfolio table, click the red trash icon on the investment row. A confirmation dialog will appear. Click Confirm to permanently delete the record.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span>Is there a backup feature?</span><i class="bi bi-chevron-down"></i>
+          </div>
+          <div class="faq-a">Yes! Go to Settings → Data → enable "Backup on save". Each time you save, a .bak file is created alongside your portfolio.dat for recovery.</div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-5">
+        <div class="form-card mb-3">
+          <div class="form-section-title">Quick Navigation</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn-ghost w-100 text-start" onclick="showPage('add')"><i class="bi bi-plus-circle me-2" style="color:var(--accent)"></i>Add Investment</button>
+            <button class="btn-ghost w-100 text-start" onclick="showPage('portfolio')"><i class="bi bi-briefcase me-2" style="color:var(--accent2)"></i>View Portfolio</button>
+            <button class="btn-ghost w-100 text-start" onclick="showPage('calculator')"><i class="bi bi-calculator me-2" style="color:var(--accent3)"></i>P&L Calculator</button>
+            <button class="btn-ghost w-100 text-start" onclick="showPage('importexport')"><i class="bi bi-arrow-left-right me-2" style="color:var(--accent)"></i>Import / Export</button>
+            <button class="btn-ghost w-100 text-start" onclick="showPage('summary')"><i class="bi bi-bar-chart me-2" style="color:var(--accent2)"></i>Summary</button>
+          </div>
+        </div>
+        <div class="form-card" style="background:rgba(200,241,53,.03);border-color:rgba(200,241,53,.15)">
+          <div style="font-size:.72rem;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">System Info</div>
+          <div style="font-size:.75rem;color:var(--muted);line-height:2">
+            <div>• File-based storage (no database)</div>
+            <div>• Single-user application</div>
+            <div>• No internet connection required</div>
+            <div>• Runs on any JVM-compatible OS</div>
+            <div>• Data stored in: <span style="color:var(--accent)">portfolio.dat</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main-content -->
+
+<!-- ══════════════ MODALS ══════════════ -->
+<!-- Delete Confirm -->
+<div class="modal-overlay" id="modal-delete">
+  <div class="modal-box">
+    <div style="font-size:2rem;margin-bottom:10px">🗑️</div>
+    <div class="modal-title">Delete Investment?</div>
+    <div class="modal-sub">This action cannot be undone. The investment record will be permanently removed from your portfolio.</div>
+    <div style="background:rgba(255,77,109,.08);border:1px solid rgba(255,77,109,.2);border-radius:8px;padding:12px;font-size:.78rem;color:var(--danger);margin-bottom:20px">
+      <i class="bi bi-exclamation-triangle me-1"></i>You are about to delete this investment record.
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn-ghost flex-fill" onclick="closeModal('modal-delete')">Cancel</button>
+      <button style="background:var(--danger);color:#fff;border:none;padding:8px 18px;border-radius:6px;font-family:'Inter',sans-serif;font-size:.78rem;cursor:pointer;flex:1" onclick="confirmDelete()">Confirm Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal-box">
+    <div class="modal-title" id="det-title">Investment Details</div>
+    <div class="modal-sub">Full breakdown of this investment</div>
+    <div style="font-size:.78rem;line-height:2.2;color:var(--muted)">
+      <div style="display:flex;justify-content:space-between"><span>Name</span><span style="color:var(--text)" id="det-name"></span></div>
+      <div style="display:flex;justify-content:space-between"><span>Total Amount</span><span style="color:var(--text)" id="det-amount"></span></div>
+      <div style="display:flex;justify-content:space-between"><span>Buy Price</span><span style="color:var(--text)" id="det-buy"></span></div>
+      <div style="display:flex;justify-content:space-between"><span>Sell Price</span><span style="color:var(--text)" id="det-sell"></span></div>
+      <div style="display:flex;justify-content:space-between"><span>Quantity</span><span style="color:var(--text)" id="det-qty"></span></div>
+      <hr style="border-color:var(--border)"/>
+      <div style="display:flex;justify-content:space-between"><span>Net P&L</span><span id="det-pl" style="font-family:'Inter',sans-serif;font-weight:600;font-size:1.1rem"></span></div>
+    </div>
+    <button class="btn-ghost w-100 mt-3" onclick="closeModal('modal-detail')">Close</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><i class="bi bi-check-circle" style="color:var(--accent)"></i><span id="toast-msg"></span></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  /* ══════════════════════════════════════════════════════════
+     API LAYER — all calls go to the Java backend
+  ══════════════════════════════════════════════════════════ */
+  // ── API Base URL ─────────────────────────────────────────────────────────
+  // Change this to your deployed server URL when deploying, e.g.:
+  //   const API = 'https://your-server.com/api';
+  // For local development keep it as localhost:8080
+  const API_PORT = 8080;
+  const API = (!window.location.hostname || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:' + API_PORT + '/api'
+    : window.location.protocol + '//' + window.location.hostname + '/api';
+
+  async function apiFetch(method, endpoint, body = null) {
+    const opts = {
+      method,
+      headers: { 'Content-Type': 'application/json' }
+    };
+    if (body) opts.body = JSON.stringify(body);
+    try {
+      const res = await fetch(API + endpoint, opts);
+      // Handle non-2xx HTTP responses
+      if (!res.ok) {
+        let errMsg = 'Server error ' + res.status;
+        try { const j = await res.json(); errMsg = j.message || errMsg; } catch(e) {}
+        throw new Error(errMsg);
+      }
+      const json = await res.json();
+      // Backend uses status:"error" to signal business logic errors
+      if (json.status === 'error') throw new Error(json.message || 'Unknown error');
+      return json;
+    } catch (err) {
+      // Network/connection error — backend is offline
+      if (err.name === 'TypeError' || err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+        showToast('⚠ Backend offline — start the Java server on port 8080', true);
+        return null;
+      }
+      showToast('⚠ ' + err.message, true);
+      return null;
+    }
+  }
+
+  // Shorthand helpers
+  const api = {
+    get:    (ep)       => apiFetch('GET',    ep),
+    post:   (ep, body) => apiFetch('POST',   ep, body),
+    put:    (ep, body) => apiFetch('PUT',    ep, body),
+    delete: (ep)       => apiFetch('DELETE', ep),
+  };
+
+  /* ── FORMAT HELPERS ─────────────────────────────────────── */
+  const fmt = {
+    inr:  v  => '₹' + Math.abs(v).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2}),
+    pl:   v  => (v >= 0 ? '+' : '-') + '₹' + Math.abs(v).toLocaleString('en-IN', {minimumFractionDigits:2}),
+    pct:  v  => (v >= 0 ? '+' : '') + v.toFixed(2) + '%',
+    date: s  => s || '—',
+  };
+
+  /* ══════════════════════════════════════════════════════════
+     STATE
+  ══════════════════════════════════════════════════════════ */
+  let investments   = [];   // local cache
+  const invMap      = new Map(); // id → investment object (for detail modal)
+  let pendingDelete = null; // id of investment to delete
+  let editingId     = null; // id of investment being edited
+
+  /* ══════════════════════════════════════════════════════════
+     PAGE NAVIGATION
+  ══════════════════════════════════════════════════════════ */
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const pg = document.getElementById('page-' + id);
+    if (pg) pg.classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => {
+      if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + id + "'"))
+        n.classList.add('active');
+    });
+    window.scrollTo(0, 0);
+    // Refresh data when navigating to data pages
+    if (id === 'dashboard')   loadDashboard();
+    if (id === 'portfolio')   loadPortfolio();
+    if (id === 'summary')     loadSummary();
+    if (id === 'activity')    loadActivityLog();
+    if (id === 'importexport') loadFileInfo();
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     TOAST
+  ══════════════════════════════════════════════════════════ */
+  function showToast(msg, isError = false) {
+    const t   = document.getElementById('toast');
+    const ico = t.querySelector('i');
+    document.getElementById('toast-msg').textContent = msg;
+    ico.className = isError ? 'bi bi-exclamation-triangle' : 'bi bi-check-circle';
+    ico.style.color = isError ? 'var(--danger)' : 'var(--accent)';
+    t.style.borderColor = isError ? 'var(--danger)' : 'var(--accent)';
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     MODALS
+  ══════════════════════════════════════════════════════════ */
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+  document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); });
+  });
+
+  // Lookup investment by id from the map and show detail modal
+  function showDetailById(id) {
+    const inv = invMap.get(id);
+    if (!inv) { showToast('⚠ Investment not found', true); return; }
+    showDetailModal(inv);
+  }
+
+  // Detail modal — filled dynamically from investment object
+  function showDetailModal(inv) {
+    document.getElementById('det-title').textContent  = inv.name;
+    document.getElementById('det-name').textContent   = inv.name;
+    document.getElementById('det-amount').textContent = fmt.inr(inv.amount);
+    document.getElementById('det-buy').textContent    = fmt.inr(inv.buyPrice);
+    document.getElementById('det-sell').textContent   = fmt.inr(inv.sellPrice);
+    document.getElementById('det-qty').textContent    = inv.quantity;
+    const plEl = document.getElementById('det-pl');
+    plEl.textContent  = fmt.pl(inv.profitLoss);
+    plEl.style.color  = inv.isProfit ? 'var(--accent2)' : 'var(--danger)';
+    document.getElementById('modal-detail').classList.add('show');
+  }
+
+  // Delete modal — store pending id, confirmed in confirmDelete()
+  function showDeleteModal(id) {
+    pendingDelete = id;
+    document.getElementById('modal-delete').classList.add('show');
+  }
+
+  async function confirmDelete() {
+    if (!pendingDelete) return;
+    closeModal('modal-delete');
+    const res = await api.delete('/investments/' + pendingDelete);
+    if (res) {
+      showToast('✓ Investment deleted');
+      pendingDelete = null;
+      loadPortfolio();
+      loadDashboard();
+    }
+  }
+  // Wire the confirm button
+  document.addEventListener('DOMContentLoaded', () => {
+    // delete confirm button wired inline via onclick attribute
+  });
+
+  /* ══════════════════════════════════════════════════════════
+     BAR CHART — renders P&L % per investment dynamically
+  ══════════════════════════════════════════════════════════ */
+  function renderBarChart(investments) {
+    const emptyEl = document.getElementById('barchart-empty');
+    const barsEl  = document.getElementById('barchart-bars');
+    const labelEl = document.getElementById('barchart-label');
+    if (!emptyEl || !barsEl || !labelEl) return;
+
+    const valid = investments.filter(inv => inv.amount > 0);
+
+    if (valid.length === 0) {
+      emptyEl.style.display = 'flex';
+      barsEl.style.display  = 'none';
+      labelEl.style.display = 'none';
+      return;
+    }
+
+    emptyEl.style.display = 'none';
+    barsEl.style.display  = 'flex';
+    labelEl.style.display = 'block';
+
+    const maxAbs = Math.max(...valid.map(i => Math.abs(i.returnPercent)), 1);
+    const BAR_COLORS = ['#4f46e5','#22c55e','#f59e0b','#8b5cf6','#06b6d4','#f97316','#10b981','#ec4899'];
+
+    barsEl.innerHTML = valid.map((inv, i) => {
+      const heightPct = Math.max(4, (Math.abs(inv.returnPercent) / maxAbs) * 100).toFixed(1);
+      const color     = inv.isProfit ? (BAR_COLORS[i % BAR_COLORS.length]) : '#ef4444';
+      const gradient  = `linear-gradient(to top, ${color}, ${color}22)`;
+      const shortName = inv.name.length > 8 ? inv.name.substring(0, 7) + '…' : inv.name;
+      return `
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1" title="${inv.name}: ${inv.returnPercent.toFixed(2)}%">
+          <div style="flex:1;display:flex;align-items:flex-end;width:100%">
+            <div style="width:100%;height:${heightPct}%;background:${gradient};border-radius:4px 4px 0 0;opacity:.85;transition:height .4s ease"></div>
+          </div>
+          <div style="font-size:.6rem;color:var(--muted);text-align:center;white-space:nowrap">${shortName}</div>
+        </div>`;
+    }).join('');
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     DONUT CHART — renders allocation from real investment data
+  ══════════════════════════════════════════════════════════ */
+  const DONUT_COLORS = [
+    '#4f46e5','#22c55e','#f59e0b','#ef4444',
+    '#8b5cf6','#06b6d4','#f97316','#10b981','#ec4899','#6366f1'
+  ];
+  const CIRCUMFERENCE = 2 * Math.PI * 48; // r=48 → ≈301.6
+
+  function renderDonut(investments) {
+    const emptyEl = document.getElementById('donut-empty');
+    const chartEl = document.getElementById('donut-chart');
+    const svgEl   = document.getElementById('donut-svg');
+    const legEl   = document.getElementById('donut-legend');
+
+    if (!emptyEl || !chartEl || !svgEl || !legEl) return;
+
+    // Filter to investments with a positive amount
+    const valid = investments.filter(inv => inv.amount > 0);
+
+    if (valid.length === 0) {
+      // Show empty state, hide chart
+      emptyEl.style.display = 'flex';
+      chartEl.style.display = 'none';
+      return;
+    }
+
+    // Show chart, hide empty state
+    emptyEl.style.display = 'none';
+    chartEl.style.display = 'flex';
+
+    const total = valid.reduce((sum, inv) => sum + inv.amount, 0);
+
+    // Build SVG circles (conic segments via stroke-dasharray)
+    let offset = 0;
+    let svgHTML = '<circle cx="60" cy="60" r="48" fill="none" stroke="#f1f5f9" stroke-width="14"/>';
+    let legendHTML = '';
+
+    valid.forEach((inv, i) => {
+      const pct   = inv.amount / total;
+      const arc   = pct * CIRCUMFERENCE;
+      const gap   = CIRCUMFERENCE - arc;
+      const color = DONUT_COLORS[i % DONUT_COLORS.length];
+      const label = inv.name.length > 16 ? inv.name.substring(0, 15) + '…' : inv.name;
+
+      svgHTML += `<circle cx="60" cy="60" r="48" fill="none"
+        stroke="${color}" stroke-width="14"
+        stroke-dasharray="${arc.toFixed(2)} ${gap.toFixed(2)}"
+        stroke-dashoffset="${(-offset).toFixed(2)}"
+        stroke-linecap="butt"
+        transform="rotate(-90 60 60)"/>`;
+
+      legendHTML += `
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span>
+            <span style="color:${color};margin-right:5px;font-size:.85rem">■</span>
+            ${label}
+          </span>
+          <span style="color:var(--muted)">${(pct * 100).toFixed(1)}%</span>
+        </div>`;
+
+      offset += arc;
+    });
+
+    svgEl.innerHTML  = svgHTML;
+    legEl.innerHTML  = legendHTML;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     DASHBOARD
+  ══════════════════════════════════════════════════════════ */
+  async function loadDashboard() {
+    const [invRes, sumRes] = await Promise.all([
+      api.get('/investments'),
+      api.get('/summary')
+    ]);
+    if (!invRes || !sumRes) return;
+
+    investments = invRes.data || [];
+    const s     = sumRes.data;
+
+    // Stat cards — guard against missing fields
+    setEl('dash-invested',     s.totalInvested     != null ? fmt.inr(s.totalInvested)         : '--');
+    setEl('dash-value',        s.totalCurrentValue != null ? fmt.inr(s.totalCurrentValue)     : '--');
+    setEl('dash-profit',       s.totalProfit       != null ? fmt.pl(s.totalProfit)             : '--');
+    setEl('dash-loss',         s.totalLoss         != null ? fmt.pl(s.totalLoss)               : '--');
+    setEl('dash-return-badge', s.overallReturnPercent != null ? fmt.pct(s.overallReturnPercent) : '--');
+    setEl('dash-count',        s.count != null ? s.count + ' asset' + (s.count !== 1 ? 's' : '') : 'No data');
+
+    // Recent investments table
+    renderDashTable(investments.slice(0, 5));
+    renderBarChart(investments);
+    renderDonut(investments);
+  }
+
+  function renderDashTable(list) {
+    const tbody = document.getElementById('dash-tbody');
+    if (!tbody) return;
+    const colors = ['var(--accent)','var(--accent2)','var(--accent3)','var(--danger)','#9b59b6'];
+    tbody.innerHTML = list.map((inv, i) => `
+      <tr>
+        <td><span class="asset-dot" style="background:${colors[i%colors.length]}"></span>${esc(inv.name)}</td>
+        <td>${fmt.inr(inv.amount)}</td>
+        <td>${fmt.inr(inv.buyPrice)}</td>
+        <td>${fmt.inr(inv.sellPrice)}</td>
+        <td>${inv.quantity}</td>
+        <td class="${inv.isProfit ? 'profit' : 'loss'}">${fmt.pl(inv.profitLoss)}</td>
+        <td><span class="pill ${inv.isProfit ? 'pill-green' : 'pill-red'}">${inv.isProfit ? 'Profit' : 'Loss'}</span></td>
+      </tr>`).join('');
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     PORTFOLIO TABLE
+  ══════════════════════════════════════════════════════════ */
+  let portfolioFilter = 'all';
+
+  async function loadPortfolio(filter) {
+    if (filter) portfolioFilter = filter;
+
+    // Update filter pill UI
+    document.querySelectorAll('.filter-pill').forEach(p => {
+      p.classList.toggle('pill-green',  p.dataset.filter === portfolioFilter && portfolioFilter === 'all');
+      p.classList.toggle('pill-teal',   p.dataset.filter === portfolioFilter && portfolioFilter === 'profit');
+      p.classList.toggle('pill-red',    p.dataset.filter === portfolioFilter && portfolioFilter === 'loss');
+      p.classList.toggle('pill-gray',   p.dataset.filter !== portfolioFilter);
+    });
+
+    const res = await api.get('/investments?filter=' + portfolioFilter);
+    if (!res) return;
+    investments = res.data || [];
+    renderPortfolioTable(investments);
+  }
+
+  function renderPortfolioTable(list) {
+    const tbody = document.getElementById('portfolio-tbody');
+    if (!tbody) return;
+    invMap.clear(); // reset before repopulating
+    const colors = ['var(--accent)','var(--accent2)','var(--accent3)','var(--danger)','#9b59b6','#3498db','#e67e22'];
+    tbody.innerHTML = list.length === 0
+      ? `<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:32px">No investments found.</td></tr>`
+      : list.map((inv, i) => {
+        invMap.set(inv.id, inv);
+        return `
+      <tr>
+        <td style="color:var(--muted)">${String(inv.id).padStart(3,'0')}</td>
+        <td><span class="asset-dot" style="background:${colors[i%colors.length]}"></span>${esc(inv.name)}</td>
+        <td>${fmt.inr(inv.amount)}</td>
+        <td>${fmt.inr(inv.buyPrice)}</td>
+        <td>${fmt.inr(inv.sellPrice)}</td>
+        <td>${inv.quantity}</td>
+        <td class="${inv.isProfit ? 'profit' : 'loss'}">${fmt.pl(inv.profitLoss)}</td>
+        <td class="${inv.isProfit ? 'profit' : 'loss'}">${fmt.pct(inv.returnPercent)}</td>
+        <td><span class="pill ${inv.isProfit ? 'pill-green' : 'pill-red'}">${inv.isProfit ? 'Profit' : 'Loss'}</span></td>
+        <td>
+          <button class="action-btn view"   title="View"   onclick="showDetailById(${inv.id})"><i class="bi bi-eye"></i></button>
+          <button class="action-btn edit"   title="Edit"   onclick="openEditPage(${inv.id})"><i class="bi bi-pencil"></i></button>
+          <button class="action-btn delete" title="Delete" onclick="showDeleteModal(${inv.id})"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>`;
+      }).join('');
+
+    setEl('portfolio-count', `Showing ${list.length} of ${list.length} investments`);
+  }
+
+  // Portfolio search
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('portfolio-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        const q = searchInput.value.toLowerCase();
+        const filtered = investments.filter(inv =>
+          inv.name.toLowerCase().includes(q) ||
+          (inv.type  && inv.type.toLowerCase().includes(q)) ||
+          (inv.sector && inv.sector.toLowerCase().includes(q))
+        );
+        renderPortfolioTable(filtered);
+      });
+    }
+  });
+
+  /* ══════════════════════════════════════════════════════════
+     ADD INVESTMENT
+  ══════════════════════════════════════════════════════════ */
+  // Live preview
+  ['inv-name','inv-amount','inv-buy','inv-sell','inv-qty'].forEach(id => {
+    document.addEventListener('DOMContentLoaded', () => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', updatePreview);
+    });
+  });
+
+  function updatePreview() {
+    const name   = document.getElementById('inv-name')?.value  || '—';
+    const amount = parseFloat(document.getElementById('inv-amount')?.value) || 0;
+    const buy    = parseFloat(document.getElementById('inv-buy')?.value)    || 0;
+    const sell   = parseFloat(document.getElementById('inv-sell')?.value)   || 0;
+    const qty    = parseFloat(document.getElementById('inv-qty')?.value)    || 0;
+    setEl('prev-name',   name || '—');
+    setEl('prev-amount', amount ? fmt.inr(amount) : '—');
+    setEl('prev-buy',    buy   ? fmt.inr(buy)     : '—');
+    setEl('prev-sell',   sell  ? fmt.inr(sell)    : '—');
+    setEl('prev-qty',    qty   || '—');
+    if (buy && sell && qty) {
+      const pl    = (sell - buy) * qty;
+      const plEl  = document.getElementById('prev-pl');
+      if (plEl) {
+        plEl.textContent = fmt.pl(pl);
+        plEl.style.color = pl >= 0 ? 'var(--accent2)' : 'var(--danger)';
+      }
+    }
+  }
+
+  function clearAddForm() {
+    ['inv-name','inv-amount','inv-buy','inv-sell','inv-qty'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    ['prev-name','prev-amount','prev-buy','prev-sell','prev-qty','prev-pl'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = '—'; el.style.color = ''; }
+    });
+    // Reset selects
+    const typeEl   = document.getElementById('inv-type');
+    const sectorEl = document.getElementById('inv-sector');
+    const dateEl   = document.getElementById('inv-date');
+    const noteEl   = document.getElementById('inv-notes');
+    if (typeEl)   typeEl.selectedIndex   = 0;
+    if (sectorEl) sectorEl.selectedIndex = 0;
+    if (dateEl)   dateEl.value   = '';
+    if (noteEl)   noteEl.value   = '';
+  }
+
+  async function handleAddInvestment() {
+    const name   = document.getElementById('inv-name')?.value.trim();
+    const amount = parseFloat(document.getElementById('inv-amount')?.value)  || 0;
+    const buy    = parseFloat(document.getElementById('inv-buy')?.value)     || 0;
+    const sell   = parseFloat(document.getElementById('inv-sell')?.value)    || 0;
+    const qty    = parseInt(document.getElementById('inv-qty')?.value)       || 0;
+    const type   = document.getElementById('inv-type')?.value   || 'Stock';
+    const sector = document.getElementById('inv-sector')?.value || '';
+    const date   = document.getElementById('inv-date')?.value   || '';
+    const notes  = document.getElementById('inv-notes')?.value  || '';
+
+    if (!name)  { showToast('⚠ Investment name is required', true);  return; }
+    if (qty <=0){ showToast('⚠ Quantity must be greater than 0', true); return; }
+    if (buy <=0){ showToast('⚠ Buy price must be greater than 0', true); return; }
+
+    const res = await api.post('/investments', { name, type, sector, amount, buyPrice: buy, sellPrice: sell, quantity: qty, purchaseDate: date, notes });
+    if (res) {
+      showToast('✓ Investment added: ' + name);
+      clearAddForm();
+      showPage('portfolio');
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     EDIT INVESTMENT
+  ══════════════════════════════════════════════════════════ */
+  async function openEditPage(id) {
+    editingId = id;
+    const res = await api.get('/investments/' + id);
+    if (!res) return;
+    const inv = res.data;
+
+    setInputVal('edit-name',   inv.name);
+    setInputVal('edit-amount', inv.amount);
+    setInputVal('edit-buy',    inv.buyPrice);
+    setInputVal('edit-sell',   inv.sellPrice);
+    setInputVal('edit-qty',    inv.quantity);
+    setInputVal('edit-date',   inv.purchaseDate || '');
+    setInputVal('edit-notes',  inv.notes || '');
+
+    // Current P&L panel
+    setEl('edit-pl-val', fmt.pl(inv.profitLoss));
+    const plEl = document.getElementById('edit-pl-val');
+    if (plEl) plEl.style.color = inv.isProfit ? 'var(--accent)' : 'var(--danger)';
+    setEl('edit-pl-pct',  fmt.pct(inv.returnPercent));
+    setEl('edit-buy-disp',  'Buy: ' + fmt.inr(inv.buyPrice));
+    setEl('edit-sell-disp', 'Sell: ' + fmt.inr(inv.sellPrice));
+    setEl('edit-qty-disp',  'Qty: ' + inv.quantity);
+    setEl('edit-gain-disp', 'Gain/unit: ' + fmt.inr((inv.sellPrice - inv.buyPrice)));
+    setEl('edit-record-id', '#' + String(inv.id).padStart(3,'0'));
+    setEl('edit-created',   inv.purchaseDate || '—');
+
+    showPage('edit');
+  }
+
+  async function handleUpdateInvestment() {
+    if (!editingId) return;
+    const name   = document.getElementById('edit-name')?.value.trim();
+    const amount = parseFloat(document.getElementById('edit-amount')?.value)  || 0;
+    const buy    = parseFloat(document.getElementById('edit-buy')?.value)     || 0;
+    const sell   = parseFloat(document.getElementById('edit-sell')?.value)    || 0;
+    const qty    = parseInt(document.getElementById('edit-qty')?.value)       || 0;
+    const date   = document.getElementById('edit-date')?.value   || '';
+    const notes  = document.getElementById('edit-notes')?.value  || '';
+    const type   = document.getElementById('edit-type')?.value   || 'Stock';
+    const sector = document.getElementById('edit-sector')?.value || '';
+
+    if (!name) { showToast('⚠ Name is required', true); return; }
+
+    const res = await api.put('/investments/' + editingId, {
+      id: editingId, name, type, sector, amount,
+      buyPrice: buy, sellPrice: sell, quantity: qty, purchaseDate: date, notes
+    });
+    if (res) {
+      showToast('✓ Investment updated successfully');
+      editingId = null;
+      showPage('portfolio');
+    }
+  }
+
+  async function deleteFromEdit() {
+    if (!editingId) return;
+    showDeleteModal(editingId);
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     SUMMARY
+  ══════════════════════════════════════════════════════════ */
+  async function loadSummary() {
+    const [invRes, sumRes] = await Promise.all([
+      api.get('/investments'),
+      api.get('/summary')
+    ]);
+    if (!invRes || !sumRes) return;
+    const s = sumRes.data;
+    const list = invRes.data || [];
+
+    setEl('sum-invested', s.totalInvested     != null ? fmt.inr(s.totalInvested)     : '--');
+    setEl('sum-value',    s.totalCurrentValue != null ? fmt.inr(s.totalCurrentValue) : '--');
+    setEl('sum-profit',   s.totalProfit       != null ? fmt.pl(s.totalProfit)         : '--');
+    setEl('sum-loss',     s.totalLoss         != null ? fmt.pl(s.totalLoss)           : '--');
+    setEl('sum-net',      s.totalProfitLoss   != null ? fmt.pl(s.totalProfitLoss)     : '--');
+
+    // Breakdown bars
+    const barsEl = document.getElementById('sum-bars');
+    if (barsEl && list.length > 0) {
+      const maxAbs = Math.max(...list.map(i => Math.abs(i.returnPercent)), 1);
+      const colors = ['var(--accent)','var(--accent2)','var(--accent3)','var(--danger)','#9b59b6'];
+      barsEl.innerHTML = list.map((inv, i) => `
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:5px">
+            <span>${esc(inv.name)}</span>
+            <span class="${inv.isProfit?'profit':'loss'}">${fmt.pl(inv.profitLoss)} (${fmt.pct(inv.returnPercent)})</span>
+          </div>
+          <div class="progress-bar-custom">
+            <div class="progress-fill" style="width:${Math.min(100,(Math.abs(inv.returnPercent)/maxAbs)*100)}%;background:${inv.isProfit?colors[i%colors.length]:'var(--danger)'}"></div>
+          </div>
+        </div>`).join('');
+    }
+
+    // Best / Worst performer
+    if (s.bestPerformer && s.bestPerformer !== 'null') {
+      const b = s.bestPerformer;
+      setEl('sum-best-name',   b.name || '—');
+      setEl('sum-best-pct',    fmt.pct(b.returnPercent || 0));
+      setEl('sum-best-amount', fmt.pl(b.profitLoss || 0));
+    } else {
+      setEl('sum-best-name',   '—'); setEl('sum-best-pct', '--'); setEl('sum-best-amount', '--');
+    }
+    if (s.worstPerformer && s.worstPerformer !== 'null') {
+      const w = s.worstPerformer;
+      setEl('sum-worst-name',   w.name || '—');
+      setEl('sum-worst-pct',    fmt.pct(w.returnPercent || 0));
+      setEl('sum-worst-amount', fmt.pl(w.profitLoss || 0));
+    } else {
+      setEl('sum-worst-name',   '—'); setEl('sum-worst-pct', '--'); setEl('sum-worst-amount', '--');
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     P&L CALCULATOR
+  ══════════════════════════════════════════════════════════ */
+  async function calcPL() {
+    const buy  = parseFloat(document.getElementById('calc-buy')?.value)  || 0;
+    const sell = parseFloat(document.getElementById('calc-sell')?.value) || 0;
+    const qty  = parseInt(document.getElementById('calc-qty')?.value)    || 0;
+    const fee  = parseFloat(document.getElementById('calc-fee')?.value)  || 0;
+    if (!buy || !sell || !qty) return;
+
+    const res = await api.post('/calculate', { buyPrice: buy, sellPrice: sell, quantity: qty, fees: fee });
+    if (!res) {
+      // Fallback local calculation if backend is offline
+      const gross = (sell - buy) * qty;
+      const net   = gross - fee;
+      renderCalcResult(gross, fee, net, buy * qty);
+      return;
+    }
+    const d = res.data;
+    renderCalcResult(d.grossPL, d.fees, d.netPL, buy * qty);
+  }
+
+  function renderCalcResult(gross, fee, net, invested) {
+    const pct  = invested ? ((net / invested) * 100).toFixed(2) : 0;
+    const col  = net >= 0 ? 'var(--accent2)' : 'var(--danger)';
+    const sign = net >= 0 ? '+' : '';
+
+    const resultEl = document.getElementById('calc-result');
+    if (resultEl) { resultEl.textContent = fmt.pl(net); resultEl.style.color = col; }
+    setEl('calc-pct', sign + pct + '% return');
+    const pctEl = document.getElementById('calc-pct');
+    if (pctEl) pctEl.style.color = col;
+
+    setEl('res-gross', fmt.pl(gross));
+    setEl('res-fee',   fee ? '-' + fmt.inr(fee) : '₹0');
+    setEl('res-net',   fmt.pl(net));
+    setEl('res-pct',   sign + pct + '%');
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     SAVE / LOAD / FILE INFO
+  ══════════════════════════════════════════════════════════ */
+  async function savePortfolio(backup = true) {
+    const res = await api.post('/save', { backup });
+    if (res) {
+      showToast('✓ Portfolio saved to portfolio.dat');
+      loadFileInfo();
+    }
+  }
+
+  async function loadPortfolioFromFile() {
+    const res = await api.post('/load');
+    if (res) {
+      showToast('✓ ' + res.message);
+      loadPortfolio();
+      loadDashboard();
+    }
+  }
+
+  async function loadFileInfo() {
+    const res = await api.get('/fileinfo');
+    if (!res) return;
+    const d = res.data;
+    setEl('file-path',   d.path);
+    setEl('file-exists', d.exists ? 'Yes' : 'No');
+    setEl('file-size',   d.sizeBytes + ' bytes');
+    setEl('file-count',  d.investmentCount + ' investments');
+    setEl('file-status-badge', d.exists
+      ? '<span class="pill pill-green">Saved</span>'
+      : '<span class="pill pill-gray">Not saved yet</span>');
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     EXPORT / IMPORT
+  ══════════════════════════════════════════════════════════ */
+  async function exportData(format) {
+    const res = await api.post('/export/' + format);
+    if (res) showToast('✓ Exported to ' + res.path);
+  }
+
+  async function importCsv() {
+    const pathEl = document.getElementById('import-path');
+    const path   = pathEl?.value.trim();
+    if (!path) { showToast('⚠ Please enter the CSV file path', true); return; }
+    const res = await api.post('/import/csv', { filePath: path });
+    if (res) {
+      showToast('✓ ' + res.message);
+      loadPortfolio();
+      loadDashboard();
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     ACTIVITY LOG
+  ══════════════════════════════════════════════════════════ */
+  const actionIcons = {
+    ADD:       { icon: 'bi-plus',         bg: 'rgba(200,241,53,.1)',  color: 'var(--accent)'  },
+    UPDATE:    { icon: 'bi-pencil',       bg: 'rgba(241,193,53,.1)', color: 'var(--accent3)' },
+    DELETE:    { icon: 'bi-trash',        bg: 'rgba(255,77,109,.1)', color: 'var(--danger)'  },
+    SAVE:      { icon: 'bi-floppy',       bg: 'rgba(59,232,176,.1)', color: 'var(--accent2)' },
+    LOAD:      { icon: 'bi-folder2-open', bg: 'rgba(200,241,53,.1)', color: 'var(--accent)'  },
+    EXPORT:    { icon: 'bi-download',     bg: 'rgba(59,232,176,.1)', color: 'var(--accent2)' },
+    IMPORT:    { icon: 'bi-upload',       bg: 'rgba(200,241,53,.1)', color: 'var(--accent)'  },
+    CALCULATE: { icon: 'bi-calculator',   bg: 'rgba(241,193,53,.1)', color: 'var(--accent3)' },
+  };
+
+  async function loadActivityLog() {
+    const res = await api.get('/logs');
+    if (!res) return;
+    const logs   = res.data || [];
+    const logEl  = document.getElementById('activity-log');
+    if (!logEl) return;
+
+    if (logs.length === 0) {
+      logEl.innerHTML = `<div style="text-align:center;color:var(--muted);padding:32px;font-size:.82rem">No activity recorded yet.</div>`;
+      return;
+    }
+    logEl.innerHTML = logs.map(log => {
+      const ic = actionIcons[log.actionType] || actionIcons.ADD;
+      return `
+      <div class="activity-item">
+        <div class="activity-icon" style="background:${ic.bg}">
+          <i class="bi ${ic.icon}" style="color:${ic.color}"></i>
+        </div>
+        <div class="activity-text">
+          <div>${esc(log.description)}</div>
+          <div class="activity-time">${esc(log.timestamp)}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function clearActivityLog() {
+    const res = await api.delete('/logs');
+    if (res) {
+      showToast('✓ Activity log cleared');
+      loadActivityLog();
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     SETTINGS
+  ══════════════════════════════════════════════════════════ */
+  async function setAutoSave(val) {
+    await api.post('/settings/autosave', { autoSave: String(val) });
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     FAQ TOGGLE
+  ══════════════════════════════════════════════════════════ */
+  function toggleFaq(el) {
+    const ans  = el.nextElementSibling;
+    const icon = el.querySelector('i');
+    ans.classList.toggle('show');
+    icon.style.transform  = ans.classList.contains('show') ? 'rotate(180deg)' : '';
+    icon.style.transition = 'transform .2s';
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     UTILITIES
+  ══════════════════════════════════════════════════════════ */
+  function setEl(id, html) {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  }
+  function setInputVal(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.value = val ?? '';
+  }
+  function esc(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     STARTUP — check backend, then load dashboard
+  ══════════════════════════════════════════════════════════ */
+  async function init() {
+    const health = await api.get('/health');
+    const indicator = document.getElementById('backend-indicator');
+    if (health) {
+      if (indicator) indicator.innerHTML =
+        '<span class="pill pill-green" style="font-size:.65rem">● Backend Online</span>';
+      // Navigate to dashboard and load data
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-dashboard')?.classList.add('active');
+      loadDashboard();
+    } else {
+      if (indicator) indicator.innerHTML =
+        '<span class="pill pill-red" style="font-size:.65rem">● Backend Offline</span>';
+      setEl('dash-invested',     '--');
+      setEl('dash-value',        '--');
+      setEl('dash-profit',       '--');
+      setEl('dash-loss',         '--');
+      setEl('dash-return-badge', '--');
+      setEl('dash-count',        'No data');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
