@@ -632,10 +632,12 @@
     <a class="nav-item" onclick="showPage('help')">
       <i class="bi bi-question-circle-fill"></i><span>Help</span>
     </a>
+    <a class="nav-item" onclick="handleLogout()" style="color:var(--danger);margin-top:4px" onmouseover="this.style.background='rgba(239,68,68,.08)'" onmouseout="this.style.background='transparent'">
+      <i class="bi bi-box-arrow-left"></i><span>Logout</span>
+    </a>
   </nav>
   <div class="sidebar-footer">
-    <div id="sidebar-username" style="font-size:.7rem;color:var(--muted);margin-bottom:8px"></div>
-    <button onclick="handleLogout()" style="width:100%;padding:7px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:'Inter',sans-serif;font-size:.72rem;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Logout</button>
+    <div id="sidebar-username" style="font-size:.7rem;color:var(--muted)"></div>
   </div>
 </div>
 
