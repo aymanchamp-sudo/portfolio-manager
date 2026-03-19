@@ -7,6 +7,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     /* ── AUTH SCREEN ── */
     #auth-screen {
@@ -684,25 +685,20 @@
       <div class="col-12 col-lg-7">
         <div class="chart-area" style="flex-direction:column;align-items:flex-start;">
           <div style="font-family:'Inter',sans-serif;font-size:.85rem;font-weight:600;margin-bottom:16px;color:var(--text)">Portfolio Performance</div>
-
-          <!-- Empty state -->
           <div id="barchart-empty" style="flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px 0">
             <i class="bi bi-bar-chart" style="font-size:2.2rem;color:#e2e8f0"></i>
             <div style="font-size:.78rem;color:var(--muted)">No performance data yet</div>
             <div style="font-size:.72rem;color:var(--muted)">Add investments to see the chart</div>
           </div>
-
-          <!-- Dynamic bars -->
-          <div id="barchart-bars" style="display:none;align-items:flex-end;gap:10px;height:130px;width:100%"></div>
-          <div id="barchart-label" style="display:none;font-size:.65rem;color:var(--muted);margin-top:8px;align-self:flex-end">Bar height = P&L %</div>
+          <div id="barchart-canvas-wrap" style="display:none;width:100%;position:relative;height:160px">
+            <canvas id="barchart-canvas"></canvas>
+          </div>
         </div>
       </div>
       <!-- ALLOCATION DONUT — dynamic, driven by real investment data -->
       <div class="col-12 col-lg-5">
         <div class="chart-area" style="flex-direction:column;gap:16px;">
           <div style="font-family:'Inter',sans-serif;font-size:.85rem;font-weight:600;color:var(--text);align-self:flex-start">Allocation</div>
-
-          <!-- Empty state: shown when no investments exist -->
           <div id="donut-empty" style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 0">
             <svg viewBox="0 0 120 120" width="110" height="110">
               <circle cx="60" cy="60" r="48" fill="none" stroke="#e2e8f0" stroke-width="14"/>
@@ -710,10 +706,10 @@
             </svg>
             <div style="font-size:.75rem;color:var(--muted)">Add investments to see allocation</div>
           </div>
-
-          <!-- Dynamic donut: hidden until investments are loaded -->
           <div id="donut-chart" style="display:none;flex-direction:column;align-items:center;gap:14px;width:100%">
-            <svg id="donut-svg" viewBox="0 0 120 120" width="110" height="110" style="flex-shrink:0"></svg>
+            <div style="position:relative;width:160px;height:160px">
+              <canvas id="donut-canvas"></canvas>
+            </div>
             <div id="donut-legend" style="display:flex;flex-direction:column;gap:5px;font-size:.72rem;width:100%"></div>
           </div>
         </div>
@@ -1652,109 +1648,133 @@
   /* ══════════════════════════════════════════════════════════
      BAR CHART — renders P&L % per investment dynamically
   ══════════════════════════════════════════════════════════ */
-  function renderBarChart(investments) {
-    const emptyEl = document.getElementById('barchart-empty');
-    const barsEl  = document.getElementById('barchart-bars');
-    const labelEl = document.getElementById('barchart-label');
-    if (!emptyEl || !barsEl || !labelEl) return;
+  let barChartInstance = null;
 
-    const valid = investments.filter(inv => inv.amount > 0);
+  function renderBarChart(investments) {
+    const emptyEl  = document.getElementById('barchart-empty');
+    const wrapEl   = document.getElementById('barchart-canvas-wrap');
+    const canvas   = document.getElementById('barchart-canvas');
+    if (!emptyEl || !wrapEl || !canvas) return;
+
+    // Fix: use buyPrice * quantity as fallback when amount = 0
+    const valid = investments.map(inv => ({
+      ...inv,
+      amount: inv.amount > 0 ? inv.amount : inv.buyPrice * inv.quantity
+    })).filter(inv => inv.buyPrice > 0 || inv.profitLoss !== 0);
 
     if (valid.length === 0) {
       emptyEl.style.display = 'flex';
-      barsEl.style.display  = 'none';
-      labelEl.style.display = 'none';
+      wrapEl.style.display  = 'none';
       return;
     }
 
     emptyEl.style.display = 'none';
-    barsEl.style.display  = 'flex';
-    labelEl.style.display = 'block';
+    wrapEl.style.display  = 'block';
 
-    const maxAbs = Math.max(...valid.map(i => Math.abs(i.returnPercent)), 1);
-    const BAR_COLORS = ['#4f46e5','#22c55e','#f59e0b','#8b5cf6','#06b6d4','#f97316','#10b981','#ec4899'];
+    const labels = valid.map(inv => inv.name.length > 10 ? inv.name.substring(0, 9) + '…' : inv.name);
+    const data   = valid.map(inv => parseFloat(inv.profitLoss.toFixed(2)));
+    const colors = data.map(v => v >= 0 ? 'rgba(34,197,94,0.85)' : 'rgba(239,68,68,0.85)');
+    const borders = data.map(v => v >= 0 ? 'rgba(22,163,74,1)' : 'rgba(220,38,38,1)');
 
-    barsEl.innerHTML = valid.map((inv, i) => {
-      const heightPct = Math.max(4, (Math.abs(inv.returnPercent) / maxAbs) * 100).toFixed(1);
-      const color     = inv.isProfit ? (BAR_COLORS[i % BAR_COLORS.length]) : '#ef4444';
-      const gradient  = `linear-gradient(to top, ${color}, ${color}22)`;
-      const shortName = inv.name.length > 8 ? inv.name.substring(0, 7) + '…' : inv.name;
-      return `
-        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1" title="${inv.name}: ${inv.returnPercent.toFixed(2)}%">
-          <div style="flex:1;display:flex;align-items:flex-end;width:100%">
-            <div style="width:100%;height:${heightPct}%;background:${gradient};border-radius:4px 4px 0 0;opacity:.85;transition:height .4s ease"></div>
-          </div>
-          <div style="font-size:.6rem;color:var(--muted);text-align:center;white-space:nowrap">${shortName}</div>
-        </div>`;
-    }).join('');
+    if (barChartInstance) { barChartInstance.destroy(); barChartInstance = null; }
+
+    barChartInstance = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'P&L (₹)',
+          data,
+          backgroundColor: colors,
+          borderColor: borders,
+          borderWidth: 1,
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ' ₹' + ctx.parsed.y.toLocaleString('en-IN', {minimumFractionDigits: 2})
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#64748b' } },
+          y: {
+            grid: { color: 'rgba(0,0,0,0.05)' },
+            ticks: {
+              font: { size: 10 }, color: '#64748b',
+              callback: v => '₹' + (Math.abs(v) >= 1000 ? (v/1000).toFixed(0)+'k' : v)
+            }
+          }
+        }
+      }
+    });
   }
 
-  /* ══════════════════════════════════════════════════════════
-     DONUT CHART — renders allocation from real investment data
-  ══════════════════════════════════════════════════════════ */
+  let donutChartInstance = null;
+
   const DONUT_COLORS = [
     '#4f46e5','#22c55e','#f59e0b','#ef4444',
     '#8b5cf6','#06b6d4','#f97316','#10b981','#ec4899','#6366f1'
   ];
-  const CIRCUMFERENCE = 2 * Math.PI * 48; // r=48 → ≈301.6
 
   function renderDonut(investments) {
-    const emptyEl = document.getElementById('donut-empty');
-    const chartEl = document.getElementById('donut-chart');
-    const svgEl   = document.getElementById('donut-svg');
-    const legEl   = document.getElementById('donut-legend');
+    const emptyEl  = document.getElementById('donut-empty');
+    const chartEl  = document.getElementById('donut-chart');
+    const canvas   = document.getElementById('donut-canvas');
+    const legEl    = document.getElementById('donut-legend');
+    if (!emptyEl || !chartEl || !canvas || !legEl) return;
 
-    if (!emptyEl || !chartEl || !svgEl || !legEl) return;
-
-    // Filter to investments with a positive amount
-    const valid = investments.filter(inv => inv.amount > 0);
+    // Fix: fallback to buyPrice * quantity when amount = 0
+    const valid = investments.map(inv => ({
+      ...inv,
+      amount: inv.amount > 0 ? inv.amount : inv.buyPrice * inv.quantity
+    })).filter(inv => inv.amount > 0);
 
     if (valid.length === 0) {
-      // Show empty state, hide chart
       emptyEl.style.display = 'flex';
       chartEl.style.display = 'none';
       return;
     }
 
-    // Show chart, hide empty state
     emptyEl.style.display = 'none';
     chartEl.style.display = 'flex';
 
-    const total = valid.reduce((sum, inv) => sum + inv.amount, 0);
+    const total  = valid.reduce((sum, inv) => sum + inv.amount, 0);
+    const labels = valid.map(inv => inv.name.length > 16 ? inv.name.substring(0, 15) + '…' : inv.name);
+    const data   = valid.map(inv => inv.amount);
+    const colors = valid.map((_, i) => DONUT_COLORS[i % DONUT_COLORS.length]);
 
-    // Build SVG circles (conic segments via stroke-dasharray)
-    let offset = 0;
-    let svgHTML = '<circle cx="60" cy="60" r="48" fill="none" stroke="#f1f5f9" stroke-width="14"/>';
-    let legendHTML = '';
+    if (donutChartInstance) { donutChartInstance.destroy(); donutChartInstance = null; }
 
-    valid.forEach((inv, i) => {
-      const pct   = inv.amount / total;
-      const arc   = pct * CIRCUMFERENCE;
-      const gap   = CIRCUMFERENCE - arc;
-      const color = DONUT_COLORS[i % DONUT_COLORS.length];
-      const label = inv.name.length > 16 ? inv.name.substring(0, 15) + '…' : inv.name;
-
-      svgHTML += `<circle cx="60" cy="60" r="48" fill="none"
-        stroke="${color}" stroke-width="14"
-        stroke-dasharray="${arc.toFixed(2)} ${gap.toFixed(2)}"
-        stroke-dashoffset="${(-offset).toFixed(2)}"
-        stroke-linecap="butt"
-        transform="rotate(-90 60 60)"/>`;
-
-      legendHTML += `
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span>
-            <span style="color:${color};margin-right:5px;font-size:.85rem">■</span>
-            ${label}
-          </span>
-          <span style="color:var(--muted)">${(pct * 100).toFixed(1)}%</span>
-        </div>`;
-
-      offset += arc;
+    donutChartInstance = new Chart(canvas, {
+      type: 'doughnut',
+      data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        cutout: '65%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ' ' + ((ctx.parsed / total) * 100).toFixed(1) + '%  ₹' + ctx.parsed.toLocaleString('en-IN')
+            }
+          }
+        }
+      }
     });
 
-    svgEl.innerHTML  = svgHTML;
-    legEl.innerHTML  = legendHTML;
+    legEl.innerHTML = valid.map((inv, i) => `
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span><span style="color:${colors[i]};margin-right:5px;font-size:.85rem">■</span>${labels[i]}</span>
+        <span style="color:var(--muted)">${((inv.amount / total) * 100).toFixed(1)}%</span>
+      </div>`).join('');
   }
 
   /* ══════════════════════════════════════════════════════════
