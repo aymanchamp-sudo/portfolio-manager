@@ -1,8 +1,12 @@
-# PortfolioX — Portfolio Manager System
-### Java Backend + REST API
+# PortfolioX — Investment Portfolio Manager
+### Java Backend + REST API + PostgreSQL + Multi-User Auth
 
-> File-based, zero-dependency Java backend for the Portfolio Manager System.  
-> Built with plain Java 21 — no Maven, no Spring, no external JARs.
+> A production-ready full-stack investment portfolio manager.  
+> Built with pure Java — no Maven, no Spring, no external JARs (except PostgreSQL JDBC driver).  
+> Deployed on Render with Supabase PostgreSQL. Multi-user with session-based auth.
+
+🌐 **Live:** https://portfolio-manager-xtom.onrender.com  
+📦 **GitHub:** https://github.com/aymanchamp-sudo/portfolio-manager
 
 ---
 
@@ -10,14 +14,9 @@
 
 ```
 portfolio-backend/
-├── build.sh                          ← Compile & run script
-├── data/                             ← Auto-created at runtime
-│   ├── portfolio.dat                 ← Binary save file
-│   ├── portfolio.bak                 ← Backup (when enabled)
-│   ├── portfolio_export.csv          ← CSV export output
-│   ├── portfolio_export.json         ← JSON export output
-│   ├── portfolio_report.txt          ← TXT export output
-│   └── activity.log                  ← Activity audit log
+├── Dockerfile                        ← Docker build for Render deployment
+├── build.sh                          ← Local compile & run script
+├── index.html                        ← Frontend (served at /)
 └── src/main/java/com/portfolio/
     ├── PortfolioServer.java          ← Main entry point (HTTP server)
     ├── model/
@@ -25,212 +24,80 @@ portfolio-backend/
     │   ├── Portfolio.java            ← Collection + aggregates
     │   └── ActivityLog.java          ← Audit log entry
     ├── service/
-    │   └── PortfolioService.java     ← Business logic (singleton)
+    │   ├── PortfolioService.java     ← Business logic
+    │   └── AuthService.java          ← Register, login, session management
     ├── controller/
-    │   └── Router.java               ← HTTP request router
+    │   └── Router.java               ← HTTP request router + auth middleware
     └── util/
-        ├── FileHandler.java          ← All file I/O (.dat, CSV, JSON, TXT)
+        ├── Database.java             ← PostgreSQL connection + schema init
+        ├── InvestmentRepository.java ← DB CRUD for investments
+        ├── FileHandler.java          ← CSV import/export
         └── JsonParser.java           ← Lightweight JSON parser/builder
 ```
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Local)
 
-### 1. Compile & Run
+### Prerequisites
+- Java 17+
+- PostgreSQL database (or Supabase free tier)
+
+### 1. Set environment variable
+```bash
+export DATABASE_URL="postgresql://user:password@host:port/db"
+```
+
+### 2. Compile & Run
 ```bash
 chmod +x build.sh
 ./build.sh
 ```
 Server starts at: **http://localhost:8080**
 
-### 2. Custom Port
+---
+
+## 🐳 Docker / Render Deployment
+
 ```bash
-./build.sh run 9090
+docker build -t portfoliox .
+docker run -e DATABASE_URL="your_connection_string" -p 8080:8080 portfoliox
 ```
 
-### 3. Compile Only
-```bash
-./build.sh compile
-```
-
-### 4. Place Frontend Alongside
-```bash
-# Copy your index.html next to build.sh, then visit:
-# http://localhost:8080/
-```
+Deploy on Render: connect GitHub repo → set DATABASE_URL env variable → auto-deploys on every push.
 
 ---
 
 ## 🌐 REST API Reference
 
-Base URL: `http://localhost:8080`
+Base URL: `https://portfolio-manager-xtom.onrender.com`
 
-### Health
-| Method | Endpoint       | Description      |
-|--------|----------------|------------------|
-| GET    | /api/health    | Server status    |
+### Auth
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | /api/auth/register | Create account |
+| POST | /api/auth/login | Login → returns session token |
+| POST | /api/auth/logout | Invalidate session |
 
-**Response:**
-```json
-{"status":"ok","server":"PortfolioX Backend","version":"1.0.0"}
-```
-
----
+All other endpoints require: `Authorization: Bearer <token>`
 
 ### Investments
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /api/investments | Get all (supports ?filter=profit/loss) |
+| GET | /api/investments/{id} | Get single |
+| POST | /api/investments | Add |
+| PUT | /api/investments/{id} | Update |
+| DELETE | /api/investments/{id} | Delete |
 
-| Method | Endpoint                        | Description              |
-|--------|---------------------------------|--------------------------|
-| GET    | /api/investments                | Get all investments      |
-| GET    | /api/investments?filter=profit  | Filter: profit/loss/all  |
-| GET    | /api/investments/{id}           | Get single investment    |
-| POST   | /api/investments                | Add new investment       |
-| PUT    | /api/investments/{id}           | Update investment        |
-| DELETE | /api/investments/{id}           | Delete investment        |
-
-**Add / Update Request Body:**
-```json
-{
-  "name":         "Reliance Industries",
-  "type":         "Stock",
-  "sector":       "Energy",
-  "amount":       72000,
-  "buyPrice":     2400,
-  "sellPrice":    2800,
-  "quantity":     30,
-  "purchaseDate": "2024-01-15",
-  "notes":        "Long term hold"
-}
-```
-
-**Investment Response:**
-```json
-{
-  "status": "ok",
-  "data": {
-    "id":             1,
-    "name":           "Reliance Industries",
-    "type":           "Stock",
-    "sector":         "Energy",
-    "amount":         72000.00,
-    "buyPrice":       2400.00,
-    "sellPrice":      2800.00,
-    "quantity":       30,
-    "purchaseDate":   "2024-01-15",
-    "notes":          "Long term hold",
-    "profitLoss":     12000.00,
-    "returnPercent":  16.67,
-    "currentValue":   84000.00,
-    "isProfit":       true
-  }
-}
-```
-
----
-
-### Summary
-| Method | Endpoint      | Description              |
-|--------|---------------|--------------------------|
-| GET    | /api/summary  | Portfolio-wide analytics |
-
-**Response:**
-```json
-{
-  "status": "ok",
-  "data": {
-    "totalInvested":       245000.00,
-    "totalCurrentValue":   312450.00,
-    "totalProfitLoss":     67450.00,
-    "totalProfit":         75650.00,
-    "totalLoss":           -8200.00,
-    "overallReturnPercent": 27.53,
-    "count":               5,
-    "bestPerformer":       { ...investment... },
-    "worstPerformer":      { ...investment... }
-  }
-}
-```
-
----
-
-### P&L Calculator
-| Method | Endpoint        | Description              |
-|--------|-----------------|--------------------------|
-| POST   | /api/calculate  | Stateless P&L calculator |
-
-**Request:**
-```json
-{ "buyPrice": 2400, "sellPrice": 2800, "quantity": 30, "fees": 200 }
-```
-
-**Response:**
-```json
-{
-  "status": "ok",
-  "data": {
-    "grossPL":        12000.00,
-    "fees":           200.00,
-    "netPL":          11800.00,
-    "returnPercent":  16.39,
-    "isProfit":       true
-  }
-}
-```
-
----
-
-### Save & Load
-| Method | Endpoint    | Body                    | Description              |
-|--------|-------------|-------------------------|--------------------------|
-| POST   | /api/save   | `{"backup": true}`      | Save portfolio to .dat   |
-| POST   | /api/load   | _(empty)_               | Load portfolio from .dat |
-| GET    | /api/fileinfo | —                     | File metadata            |
-
----
-
-### Export & Import
-| Method | Endpoint          | Body                          | Description     |
-|--------|-------------------|-------------------------------|-----------------|
-| POST   | /api/export/csv   | _(empty)_                     | Export to CSV   |
-| POST   | /api/export/json  | _(empty)_                     | Export to JSON  |
-| POST   | /api/export/txt   | _(empty)_                     | Export to TXT   |
-| POST   | /api/import/csv   | `{"filePath":"path/to.csv"}`  | Import from CSV |
-
----
-
-### Activity Logs
-| Method | Endpoint    | Description          |
-|--------|-------------|----------------------|
-| GET    | /api/logs   | Get all log entries  |
-| DELETE | /api/logs   | Clear all logs       |
-
----
-
-### Settings
-| Method | Endpoint               | Body                      | Description         |
-|--------|------------------------|---------------------------|---------------------|
-| POST   | /api/settings/autosave | `{"autoSave": "true"}`    | Toggle auto-save    |
-
----
-
-## 🏗️ Architecture
-
-```
-Browser / Frontend
-       │  HTTP JSON
-       ▼
- PortfolioServer        ← Java HttpServer (port 8080)
-       │
-     Router             ← Routes method + path → handler
-       │
- PortfolioService       ← Singleton, business logic
-       │
-  ┌────┴────┐
-Portfolio  FileHandler  ← In-memory store / disk I/O
-  │
-Investment[]            ← Core data objects
-```
+### Other Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /api/summary | Portfolio-wide analytics |
+| POST | /api/calculate | Stateless P&L calculator |
+| POST | /api/import/csv | Import CSV (raw CSV body) |
+| POST | /api/export/csv | Export portfolio as CSV |
+| GET | /api/health | Server status |
 
 ---
 
@@ -238,37 +105,30 @@ Investment[]            ← Core data objects
 
 ```
 Profit/Loss = (Sell Price - Buy Price) × Quantity
-Return %    = (P&L / Total Amount) × 100
+Return %    = (P&L / Amount Invested) × 100
 Net P&L     = Gross P&L - Brokerage Fees
 ```
 
 ---
 
-## ✅ Features Implemented
+## ✅ Features
 
+- [x] Multi-user authentication (register / login / logout)
+- [x] Per-user data isolation via PostgreSQL
 - [x] Add / Update / Delete investments
-- [x] View all investments (with filter: profit / loss / all)
-- [x] Portfolio summary with aggregates
-- [x] P&L calculation (gross + net after fees)
-- [x] Best / worst performer detection
-- [x] Binary file persistence (`.dat` via Java Serialization)
-- [x] Auto-save on every write operation
-- [x] Manual save with `.bak` backup
-- [x] Load saved portfolio
-- [x] Export: CSV, JSON, TXT report
-- [x] Import from CSV
-- [x] Activity log (persisted to `activity.log`)
-- [x] CORS headers for frontend integration
-- [x] Graceful shutdown hook
-- [x] Zero external dependencies
+- [x] Portfolio summary with aggregates + smart insights
+- [x] P&L calculator (gross + net after fees)
+- [x] CSV import (browser file upload) and export
+- [x] Activity log
+- [x] Persistent cloud storage (Supabase PostgreSQL)
+- [x] Dockerised for cloud deployment on Render
+- [x] Android app via Capacitor (signed AAB for Play Store)
+- [x] CORS headers for browser fetch()
 
 ---
 
-## 🔌 Connecting the Frontend
+## 📱 Mobile App
 
-In `index.html`, the JavaScript API layer calls:
-```
-http://localhost:8080/api/...
-```
-
-Start the backend first, then open `index.html` in your browser (or serve it via the Java server at `http://localhost:8080/`).
+Android app built with Capacitor wrapping the web frontend.  
+Loads the live Render URL — UI updates automatically on redeploy.  
+Signed AAB generated for Google Play Store submission.
