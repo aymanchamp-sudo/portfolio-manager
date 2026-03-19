@@ -95,13 +95,18 @@
       text-decoration: none;
       letter-spacing: .5px;
     }
-    .nav-item:hover, .nav-item.active {
+    .nav-item:hover {
       color: var(--text);
-      border-left-color: var(--accent);
-      background: rgba(79,70,229,.06);
+      background: rgba(79,70,229,.08);
+      border-left-color: transparent;
     }
-    .nav-item.active { color: var(--accent); font-weight: 600; }
-    .nav-item i { font-size: 1rem; width: 20px; text-align: center; }
+    .nav-item.active {
+      color: var(--accent);
+      font-weight: 600;
+      background: rgba(79,70,229,.10);
+      border-left-color: var(--accent);
+    }
+    .nav-item i { font-size: 1.1rem; width: 20px; text-align: center; }
     .nav-section-label {
       font-size: .6rem;
       letter-spacing: 2px;
@@ -177,25 +182,34 @@
 
     /* ── CARDS ── */
     .stat-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: none;
+      border-radius: 16px;
       padding: 22px 24px;
       position: relative;
       overflow: hidden;
-      transition: border-color .2s, box-shadow .2s;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: transform .2s, box-shadow .2s;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
     }
     .stat-card:hover {
-      box-shadow: 0 4px 16px rgba(79,70,229,0.10);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(79,70,229,0.13), 0 2px 6px rgba(0,0,0,0.06);
+    }
+    .stat-card-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      margin-bottom: 14px;
     }
     .stat-label { font-size: .68rem; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
     .stat-value {
       font-family: 'Inter', sans-serif;
-      font-size: 2rem;
+      font-size: 1.9rem;
       font-weight: 600;
       margin: 6px 0 4px;
       line-height: 1;
+      letter-spacing: -0.5px;
     }
     .stat-badge {
       font-size: .7rem;
@@ -641,6 +655,7 @@
       <span id="backend-indicator"></span>
       <button class="btn-ghost" onclick="savePortfolio(true)"><i class="bi bi-floppy me-1"></i>Save Data</button>
       <button class="btn-accent" onclick="showPage('add')"><i class="bi bi-plus me-1"></i>Add Investment</button>
+      <div id="topbar-avatar" style="width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:600;cursor:pointer;flex-shrink:0" title="Profile"></div>
     </div>
   </div>
   <div class="page-body">
@@ -648,57 +663,64 @@
     <div class="row g-3 mb-4">
       <div class="col-12 col-md-6 col-xl-3">
         <div class="stat-card">
+          <div class="stat-card-icon" style="background:rgba(79,70,229,.1)"><i class="bi bi-wallet2" style="color:var(--accent)"></i></div>
           <div class="stat-label">Total Invested</div>
           <div class="stat-value" id="dash-invested" style="color:var(--text)">—</div>
           <span class="stat-badge badge-green" id="dash-count">— assets</span>
-          <div class="stat-accent-line" style="background:var(--accent)"></div>
         </div>
       </div>
       <div class="col-12 col-md-6 col-xl-3">
         <div class="stat-card">
+          <div class="stat-card-icon" style="background:rgba(34,197,94,.1)"><i class="bi bi-graph-up-arrow" style="color:#16a34a"></i></div>
           <div class="stat-label">Current Value</div>
           <div class="stat-value" id="dash-value" style="color:var(--accent2)">—</div>
           <span class="stat-badge badge-green" id="dash-return-badge">—</span>
-          <div class="stat-accent-line" style="background:var(--accent2)"></div>
         </div>
       </div>
       <div class="col-12 col-md-6 col-xl-3">
         <div class="stat-card">
+          <div class="stat-card-icon" style="background:rgba(34,197,94,.1)"><i class="bi bi-arrow-up-circle" style="color:#16a34a"></i></div>
           <div class="stat-label">Total Profit</div>
-          <div class="stat-value" id="dash-profit" style="color:var(--accent)">—</div>
+          <div class="stat-value" id="dash-profit" style="color:#16a34a">—</div>
           <span class="stat-badge badge-green">Unrealised</span>
-          <div class="stat-accent-line" style="background:var(--accent)"></div>
         </div>
       </div>
       <div class="col-12 col-md-6 col-xl-3">
         <div class="stat-card">
+          <div class="stat-card-icon" style="background:rgba(239,68,68,.1)"><i class="bi bi-arrow-down-circle" style="color:var(--danger)"></i></div>
           <div class="stat-label">Total Loss</div>
           <div class="stat-value" id="dash-loss" style="color:var(--danger)">—</div>
           <span class="stat-badge badge-red">Loss-making assets</span>
-          <div class="stat-accent-line" style="background:var(--danger)"></div>
         </div>
       </div>
     </div>
 
+    <!-- INSIGHTS SECTION -->
+    <div id="insights-section" style="display:none;margin-bottom:20px">
+      <div style="background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);border-radius:14px;padding:18px 24px;color:#fff">
+        <div style="font-size:.7rem;letter-spacing:2px;text-transform:uppercase;opacity:.75;margin-bottom:10px">Smart Insights</div>
+        <div id="insights-list" style="display:flex;flex-wrap:wrap;gap:10px"></div>
+      </div>
+    </div>
+
     <div class="row g-3 mb-4">
-      <!-- BAR CHART — dynamic, driven by real investment data -->
+      <!-- BAR CHART -->
       <div class="col-12 col-lg-7">
-        <div class="chart-area" style="flex-direction:column;align-items:flex-start;">
-          <div style="font-family:'Inter',sans-serif;font-size:.85rem;font-weight:600;margin-bottom:16px;color:var(--text)">Portfolio Performance</div>
+        <div class="chart-area" style="flex-direction:column;align-items:flex-start;min-height:220px">
+          <div style="font-size:.85rem;font-weight:600;margin-bottom:12px;color:var(--text)">Portfolio Performance <span style="font-size:.7rem;font-weight:400;color:var(--muted)">(P&L per investment)</span></div>
           <div id="barchart-empty" style="flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px 0">
             <i class="bi bi-bar-chart" style="font-size:2.2rem;color:#e2e8f0"></i>
-            <div style="font-size:.78rem;color:var(--muted)">No performance data yet</div>
-            <div style="font-size:.72rem;color:var(--muted)">Add investments to see the chart</div>
+            <div style="font-size:.78rem;color:var(--muted)">Add investments to see performance</div>
           </div>
-          <div id="barchart-canvas-wrap" style="display:none;width:100%;position:relative;height:160px">
+          <div id="barchart-canvas-wrap" style="display:none;width:100%;height:180px;position:relative">
             <canvas id="barchart-canvas"></canvas>
           </div>
         </div>
       </div>
-      <!-- ALLOCATION DONUT — dynamic, driven by real investment data -->
+      <!-- DONUT CHART -->
       <div class="col-12 col-lg-5">
-        <div class="chart-area" style="flex-direction:column;gap:16px;">
-          <div style="font-family:'Inter',sans-serif;font-size:.85rem;font-weight:600;color:var(--text);align-self:flex-start">Allocation</div>
+        <div class="chart-area" style="flex-direction:column;gap:12px;min-height:220px">
+          <div style="font-size:.85rem;font-weight:600;color:var(--text)">Allocation <span style="font-size:.7rem;font-weight:400;color:var(--muted)">(by amount)</span></div>
           <div id="donut-empty" style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 0">
             <svg viewBox="0 0 120 120" width="110" height="110">
               <circle cx="60" cy="60" r="48" fill="none" stroke="#e2e8f0" stroke-width="14"/>
@@ -706,11 +728,27 @@
             </svg>
             <div style="font-size:.75rem;color:var(--muted)">Add investments to see allocation</div>
           </div>
-          <div id="donut-chart" style="display:none;flex-direction:column;align-items:center;gap:14px;width:100%">
-            <div style="position:relative;width:160px;height:160px">
+          <div id="donut-chart" style="display:none;flex-direction:column;align-items:center;gap:10px;width:100%">
+            <div style="position:relative;width:150px;height:150px">
               <canvas id="donut-canvas"></canvas>
             </div>
-            <div id="donut-legend" style="display:flex;flex-direction:column;gap:5px;font-size:.72rem;width:100%"></div>
+            <div id="donut-legend" style="display:flex;flex-direction:column;gap:4px;font-size:.72rem;width:100%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- P&L LINE CHART -->
+    <div class="row g-3 mb-4">
+      <div class="col-12">
+        <div class="chart-area" style="flex-direction:column;align-items:flex-start;">
+          <div style="font-size:.85rem;font-weight:600;margin-bottom:12px;color:var(--text)">P&L Overview <span style="font-size:.7rem;font-weight:400;color:var(--muted)">(profit vs loss per investment)</span></div>
+          <div id="linechart-empty" style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px 0">
+            <i class="bi bi-graph-up" style="font-size:2.2rem;color:#e2e8f0"></i>
+            <div style="font-size:.78rem;color:var(--muted)">Add investments to see P&L overview</div>
+          </div>
+          <div id="linechart-canvas-wrap" style="display:none;width:100%;height:180px;position:relative">
+            <canvas id="linechart-canvas"></canvas>
           </div>
         </div>
       </div>
@@ -1648,133 +1686,120 @@
   /* ══════════════════════════════════════════════════════════
      BAR CHART — renders P&L % per investment dynamically
   ══════════════════════════════════════════════════════════ */
-  let barChartInstance = null;
+  let barChartInstance   = null;
+  let donutChartInstance = null;
+  let lineChartInstance  = null;
+
+  const CHART_COLORS = ['#4f46e5','#22c55e','#f59e0b','#8b5cf6','#06b6d4','#f97316','#10b981','#ec4899','#6366f1','#84cc16'];
 
   function renderBarChart(investments) {
-    const emptyEl  = document.getElementById('barchart-empty');
-    const wrapEl   = document.getElementById('barchart-canvas-wrap');
-    const canvas   = document.getElementById('barchart-canvas');
+    const emptyEl = document.getElementById('barchart-empty');
+    const wrapEl  = document.getElementById('barchart-canvas-wrap');
+    const canvas  = document.getElementById('barchart-canvas');
     if (!emptyEl || !wrapEl || !canvas) return;
 
-    // Fix: use buyPrice * quantity as fallback when amount = 0
-    const valid = investments.map(inv => ({
-      ...inv,
-      amount: inv.amount > 0 ? inv.amount : inv.buyPrice * inv.quantity
-    })).filter(inv => inv.buyPrice > 0 || inv.profitLoss !== 0);
+    const valid = investments.filter(inv => inv.buyPrice > 0);
+    if (valid.length === 0) { emptyEl.style.display = 'flex'; wrapEl.style.display = 'none'; return; }
+    emptyEl.style.display = 'none'; wrapEl.style.display = 'block';
 
-    if (valid.length === 0) {
-      emptyEl.style.display = 'flex';
-      wrapEl.style.display  = 'none';
-      return;
-    }
-
-    emptyEl.style.display = 'none';
-    wrapEl.style.display  = 'block';
-
-    const labels = valid.map(inv => inv.name.length > 10 ? inv.name.substring(0, 9) + '…' : inv.name);
-    const data   = valid.map(inv => parseFloat(inv.profitLoss.toFixed(2)));
-    const colors = data.map(v => v >= 0 ? 'rgba(34,197,94,0.85)' : 'rgba(239,68,68,0.85)');
-    const borders = data.map(v => v >= 0 ? 'rgba(22,163,74,1)' : 'rgba(220,38,38,1)');
+    // Top 10 by absolute P&L
+    const top10  = [...valid].sort((a,b) => Math.abs(b.profitLoss) - Math.abs(a.profitLoss)).slice(0, 10);
+    const labels = top10.map(inv => inv.name.length > 10 ? inv.name.substring(0,9)+'…' : inv.name);
+    const data   = top10.map(inv => Number(inv.profitLoss) || 0);
+    const bgColors = data.map(v => v >= 0 ? 'rgba(34,197,94,0.8)' : 'rgba(239,68,68,0.8)');
+    const bdColors = data.map(v => v >= 0 ? '#16a34a' : '#dc2626');
 
     if (barChartInstance) { barChartInstance.destroy(); barChartInstance = null; }
-
     barChartInstance = new Chart(canvas, {
       type: 'bar',
-      data: {
-        labels,
-        datasets: [{
-          label: 'P&L (₹)',
-          data,
-          backgroundColor: colors,
-          borderColor: borders,
-          borderWidth: 1,
-          borderRadius: 4,
-        }]
-      },
+      data: { labels, datasets: [{ label: 'P&L (₹)', data, backgroundColor: bgColors, borderColor: bdColors, borderWidth: 1.5, borderRadius: 6 }] },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: ctx => ' ₹' + ctx.parsed.y.toLocaleString('en-IN', {minimumFractionDigits: 2})
-            }
-          }
-        },
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ₹' + ctx.parsed.y.toLocaleString('en-IN', {minimumFractionDigits:2}) } } },
         scales: {
-          x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#64748b' } },
-          y: {
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: {
-              font: { size: 10 }, color: '#64748b',
-              callback: v => '₹' + (Math.abs(v) >= 1000 ? (v/1000).toFixed(0)+'k' : v)
-            }
-          }
+          x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#64748b', maxRotation: 30 } },
+          y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { size: 10 }, color: '#64748b', callback: v => '₹'+(Math.abs(v)>=1000?(v/1000).toFixed(0)+'k':v) } }
         }
       }
     });
+    setTimeout(() => { if (barChartInstance) barChartInstance.resize(); }, 150);
   }
 
-  let donutChartInstance = null;
-
-  const DONUT_COLORS = [
-    '#4f46e5','#22c55e','#f59e0b','#ef4444',
-    '#8b5cf6','#06b6d4','#f97316','#10b981','#ec4899','#6366f1'
-  ];
-
   function renderDonut(investments) {
-    const emptyEl  = document.getElementById('donut-empty');
-    const chartEl  = document.getElementById('donut-chart');
-    const canvas   = document.getElementById('donut-canvas');
-    const legEl    = document.getElementById('donut-legend');
+    const emptyEl = document.getElementById('donut-empty');
+    const chartEl = document.getElementById('donut-chart');
+    const canvas  = document.getElementById('donut-canvas');
+    const legEl   = document.getElementById('donut-legend');
     if (!emptyEl || !chartEl || !canvas || !legEl) return;
 
-    // Fix: fallback to buyPrice * quantity when amount = 0
-    const valid = investments.map(inv => ({
-      ...inv,
-      amount: inv.amount > 0 ? inv.amount : inv.buyPrice * inv.quantity
-    })).filter(inv => inv.amount > 0);
+    const valid = investments.map(inv => ({ ...inv, amount: inv.amount > 0 ? inv.amount : inv.buyPrice * inv.quantity })).filter(inv => inv.amount > 0);
+    if (valid.length === 0) { emptyEl.style.display = 'flex'; chartEl.style.display = 'none'; return; }
+    emptyEl.style.display = 'none'; chartEl.style.display = 'flex';
 
-    if (valid.length === 0) {
-      emptyEl.style.display = 'flex';
-      chartEl.style.display = 'none';
-      return;
-    }
+    const total = valid.reduce((s, i) => s + i.amount, 0);
+    // Sort by amount desc, take top 5, group rest as "Others"
+    const sorted = [...valid].sort((a, b) => b.amount - a.amount);
+    const top    = sorted.slice(0, 5);
+    const others = sorted.slice(5);
+    const othersTotal = others.reduce((s, i) => s + i.amount, 0);
 
-    emptyEl.style.display = 'none';
-    chartEl.style.display = 'flex';
-
-    const total  = valid.reduce((sum, inv) => sum + inv.amount, 0);
-    const labels = valid.map(inv => inv.name.length > 16 ? inv.name.substring(0, 15) + '…' : inv.name);
-    const data   = valid.map(inv => inv.amount);
-    const colors = valid.map((_, i) => DONUT_COLORS[i % DONUT_COLORS.length]);
+    const items  = othersTotal > 0 ? [...top, { name: 'Others', amount: othersTotal }] : top;
+    const labels = items.map(i => i.name.length > 16 ? i.name.substring(0,15)+'…' : i.name);
+    const data   = items.map(i => i.amount);
+    const colors = ['#4f46e5','#22c55e','#f59e0b','#8b5cf6','#06b6d4','#94a3b8'];
 
     if (donutChartInstance) { donutChartInstance.destroy(); donutChartInstance = null; }
-
     donutChartInstance = new Chart(canvas, {
       type: 'doughnut',
       data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
       options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        cutout: '65%',
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: ctx => ' ' + ((ctx.parsed / total) * 100).toFixed(1) + '%  ₹' + ctx.parsed.toLocaleString('en-IN')
-            }
-          }
-        }
+        responsive: true, maintainAspectRatio: true, cutout: '68%',
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ₹' + ctx.parsed.toLocaleString('en-IN') + ' (' + ((ctx.parsed/total)*100).toFixed(1) + '%)' } } }
       }
     });
 
-    legEl.innerHTML = valid.map((inv, i) => `
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span><span style="color:${colors[i]};margin-right:5px;font-size:.85rem">■</span>${labels[i]}</span>
-        <span style="color:var(--muted)">${((inv.amount / total) * 100).toFixed(1)}%</span>
+    legEl.innerHTML = items.map((inv, i) =>
+      `<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0">
+        <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:${colors[i]};display:inline-block"></span>${labels[i]}</span>
+        <span style="color:var(--muted);font-weight:500">${((inv.amount/total)*100).toFixed(1)}%</span>
       </div>`).join('');
+    setTimeout(() => { if (donutChartInstance) donutChartInstance.resize(); }, 150);
+  }
+
+  function renderLineChart(investments) {
+    const emptyEl = document.getElementById('linechart-empty');
+    const wrapEl  = document.getElementById('linechart-canvas-wrap');
+    const canvas  = document.getElementById('linechart-canvas');
+    if (!emptyEl || !wrapEl || !canvas) return;
+
+    const valid = investments.filter(inv => inv.buyPrice > 0);
+    if (valid.length === 0) { emptyEl.style.display = 'flex'; wrapEl.style.display = 'none'; return; }
+    emptyEl.style.display = 'none'; wrapEl.style.display = 'block';
+
+    const sorted = [...valid].sort((a, b) => (a.purchaseDate||'').localeCompare(b.purchaseDate||''));
+    const labels = sorted.map(inv => inv.name.length > 10 ? inv.name.substring(0,9)+'…' : inv.name);
+    const plData = sorted.map(inv => Number(inv.profitLoss) || 0);
+
+    if (lineChartInstance) { lineChartInstance.destroy(); lineChartInstance = null; }
+    lineChartInstance = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Profit', data: plData.map(v => v >= 0 ? v : 0), backgroundColor: 'rgba(34,197,94,0.75)', borderColor: '#16a34a', borderWidth: 1.5, borderRadius: 4 },
+          { label: 'Loss',   data: plData.map(v => v < 0 ? v : 0),  backgroundColor: 'rgba(239,68,68,0.75)', borderColor: '#dc2626', borderWidth: 1.5, borderRadius: 4 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 12 } }, tooltip: { callbacks: { label: ctx => ' ₹' + Math.abs(ctx.parsed.y).toLocaleString('en-IN', {minimumFractionDigits:2}) } } },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#64748b' }, stacked: true },
+          y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 10 }, color: '#64748b', callback: v => '₹'+(Math.abs(v)>=1000?(v/1000).toFixed(0)+'k':v) }, stacked: true }
+        }
+      }
+    });
+    setTimeout(() => { if (lineChartInstance) lineChartInstance.resize(); }, 150);
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -1802,6 +1827,43 @@
     renderDashTable(investments.slice(0, 5));
     renderBarChart(investments);
     renderDonut(investments);
+    renderLineChart(investments);
+    renderInsights(investments, s);
+
+    // Update topbar avatar
+    const avatarEl = document.getElementById('topbar-avatar');
+    if (avatarEl && authUsername) avatarEl.textContent = authUsername.charAt(0).toUpperCase();
+  }
+
+  function renderInsights(investments, s) {
+    const section = document.getElementById('insights-section');
+    const list    = document.getElementById('insights-list');
+    if (!section || !list || !investments.length) { if(section) section.style.display = 'none'; return; }
+
+    const insights = [];
+
+    // Overall return
+    if (s.overallReturnPercent != null) {
+      const sign = s.overallReturnPercent >= 0 ? '↑' : '↓';
+      insights.push(`${sign} You are ${s.overallReturnPercent >= 0 ? 'up' : 'down'} ${Math.abs(s.overallReturnPercent).toFixed(2)}% overall`);
+    }
+
+    // Best performer
+    const best = [...investments].sort((a,b) => b.returnPercent - a.returnPercent)[0];
+    if (best && best.returnPercent > 0) insights.push(`🏆 Top asset: ${best.name} (+${best.returnPercent.toFixed(1)}%)`);
+
+    // Worst performer
+    const worst = [...investments].sort((a,b) => a.returnPercent - b.returnPercent)[0];
+    if (worst && worst.returnPercent < 0) insights.push(`⚠ Watch: ${worst.name} (${worst.returnPercent.toFixed(1)}%)`);
+
+    // Count profitable
+    const profitable = investments.filter(i => i.isProfit).length;
+    insights.push(`📊 ${profitable} of ${investments.length} assets in profit`);
+
+    section.style.display = insights.length ? 'block' : 'none';
+    list.innerHTML = insights.map(i =>
+      `<div style="background:rgba(255,255,255,0.15);border-radius:8px;padding:7px 12px;font-size:.78rem;white-space:nowrap">${i}</div>`
+    ).join('');
   }
 
   function renderDashTable(list) {
